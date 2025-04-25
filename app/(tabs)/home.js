@@ -6,7 +6,7 @@ import PinPopup from '../../src/screens/PinPopup';
 
 const home = () => {
   return (
-    <SafeAreaView>
+    <SafeAreaView style = {{flex: 1}}>
       <HomeScreen/>
       <PinPopup></PinPopup>
     </SafeAreaView>

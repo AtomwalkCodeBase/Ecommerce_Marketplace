@@ -1,4 +1,6 @@
-import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, getEmpHolidayData, empCheckData, processClaim, getClaimApproverList } from "../services/ConstantServies";
+import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, 
+  getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getProductCategoryListURL, productListURL, userLoginURL,
+  addressListURL} from "./ConstantServices";
 import { authAxios, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
@@ -95,3 +97,30 @@ export function getEmpLeave(leave_type , emp_id, year) {
     // console.log('Data to be sent:', data);
     return authAxiosPost(empCheckData, data)
   }
+
+  export function getProductCategoryList() {
+    // console.log('getProductCategoryList')
+    return authAxios(getProductCategoryListURL);
+}
+
+export function productList() {
+    // console.log('productList')
+    return authAxios(productListURL)
+}
+
+export function fetchAddressList(address_type) {
+  // console.log('fetchAddressList')
+  return authAxios(addressListURL(address_type));
+  
+}
+
+
+//Customer Login
+export function customerLogin(username, password) {
+  let data = {
+    'mobile_number': username,
+    'pin': password
+  };
+  // console.log('userLogin')
+  return authAxiosPost(userLoginURL, data);
+}
