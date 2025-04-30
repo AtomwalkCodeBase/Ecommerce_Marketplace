@@ -101,6 +101,7 @@ const LoginScreen = () => {
           <MaterialIcons name="lock-outline" size={20} color="#6c757d" />
           <Input
             placeholder="PIN"
+            keyboardType="numeric"
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!isPasswordVisible}

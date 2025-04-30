@@ -1,171 +1,71 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { View, Text, FlatList, Dimensions } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import React from 'react';
 import styled from 'styled-components/native';
-import InfoCard from '../components/InfoCard';
-import { AppContext } from '../../context/AppContext';
-import { getCompanyInfo, getProfileInfo } from '../services/authServices';
-import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'expo-status-bar';
 
-
-const { width, height } = Dimensions.get('window');
-
-
-const Container = styled.View`
-  background-color: #f5f5f5;
-`;
-
-const GradientBackground = styled(LinearGradient).attrs({
-  colors: ['#c2e9fb', '#ffdde1'], // Top to bottom gradient
-  start: { x: 0, y: 0 },
-  end: { x: 1, y: 1 },
-})`
-  /* flex: 1; */
-  align-items: center;
-  /* padding: 20px; */
-  height:100%;
-`;
-
-const LogoContainer = styled.View`
-  width: ${width * 0.25}px;
-  height: ${width * 0.25}px;
-  background-color: #ffffff;
-  border-radius: ${width * 0.25}px;
-  align-items: center;
+const HeaderContainer = styled.View`
+  padding: 12px 18px;
+  background-color: #fff;
   justify-content: center;
-  margin-bottom: 15px;
-  margin-top: 5%;
+  align-items: center;
+  position: relative;
+  height: 60px;
 `;
 
-const Logo = styled.Image.attrs(() => ({
-  resizeMode: 'contain',  // Cover ensures the image fills the container
-}))`
-  width: 95%;
-  height: 95%;
-  border-radius: ${width * 0.35}px;  /* Ensures the image respects the circular shape */
-`;
-
-// Header styles
-const CompanyName = styled.Text`
-  font-size: 22px;
+const Title = styled.Text`
+  font-size: 18px;
   font-weight: bold;
-  margin: 10px 0;
-  color: #333333;
+  color: black;
 `;
 
-const SubHeader = styled.Text`
-  font-size: 16px;
-  margin-bottom: 20px;
-  color: #555555;
+const IconButton = styled.TouchableOpacity`
+  padding: 8px;
 `;
 
-// Activity List
-const ActivityContainer = styled.View`
-  width: 100%;
-  margin-top: 20px;
-  padding: 20px;
+const LeftIcon = styled(IconButton)`
+  position: absolute;
+  left: 18px;
+  top: 12px;
 `;
 
-const ActivityRow = styled.View`
+const RightIconsContainer = styled.View`
+  position: absolute;
+  right: 18px;
+  top: 12px;
   flex-direction: row;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background-color: #ffffff;
-  margin-bottom: 5px;
-  border-radius: 10px;
-  elevation: 2;
+  align-items: center;
 `;
 
-const ActivityText = styled.Text`
-  font-size: 14px;
-  color: #333333;
-`;
+const HomeScreen = () => {
+  const handleMenuPress = () => {
+    console.log("Menu pressed");
+  };
 
-const StatusText = styled.Text`
-  font-size: 14px;
-  font-weight: bold;
-  color: #e63946;
-`;
+  const handleSearchPress = () => {
+    console.log("Search pressed");
+  };
 
-const Row = styled.View`
-  flex-direction: row;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 10px;
-`;
-
-// Main App Component
-const HomePage = () => {
-  const { userToken } = useContext(AppContext);
-  const [company, setCompany] = useState({});
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    getCompanyInfo()
-      .then((res) => {
-        setCompany(res.data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const activities = [
-    { id: '1', reference: 'PROJECT-2021-00002', status: 'IN PROGRESS' },
-    { id: '2', reference: 'PROJECT-2023-00004', status: 'IN PROGRESS' },
-    { id: '3', reference: 'PTAX-2020-00005', status: 'IN PROGRESS' },
-  ];
+  const handleBellPress = () => {
+    console.log("Bell pressed");
+  };
 
   return (
-    <Container>
-      <StatusBar barStyle="light-content" backgroundColor="#a970ff" />
-    <GradientBackground>
-      {/* Logo */}
-        <LogoContainer>
-          <Logo source={{ uri: company.image || 'https://via.placeholder.com/150' }} />
-        </LogoContainer>
-        <CompanyName>{company.name || 'Atomwalk Technologies'}</CompanyName>
+    <HeaderContainer>
+      <LeftIcon onPress={handleMenuPress}>
+        <Feather name="menu" size={24} color="black" />
+      </LeftIcon>
 
-      {/* <Header>ATOMWALK TECHNOLOGIES</Header> */}
-      <SubHeader>Welcome to Atomwalk Office!</SubHeader>
+      <Title>AW-Ecommerce</Title>
 
-      {/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <InfoCard number="3" label="Project Activities" gradientColors={['#007bff', '#00c6ff']} />
-        <InfoCard number="0" label="Reviews" gradientColors={['#6dd5ed', '#2193b0']} />
-        <InfoCard number="1" label="Completed Activities" gradientColors={['#38ef7d', '#11998e']} />
-        <InfoCard number="2" label="Pending/On Hold" gradientColors={['#f09819', '#ff512f']} />
-        <InfoCard number="2" label="Over Due Activities" gradientColors={['#e52d27', '#b31217']} />
-      </View> */}
-
-      {/* Cards Layout */}
-      <Row>
-          <InfoCard number="3" label="Project Activities" gradientColors={['#007bff', '#00c6ff']} />
-          <InfoCard number="0" label="Reviews" gradientColors={['#6dd5ed', '#2193b0']} />
-        </Row>
-
-        <Row>
-          <InfoCard number="1" label="Completed Activities" gradientColors={['#38ef7d', '#11998e']} />
-          <InfoCard number="2" label="Pending/On Hold" gradientColors={['#f09819', '#ff512f']} />
-          <InfoCard number="2" label="Over Due Activities" gradientColors={['#e52d27', '#b31217']} />
-        </Row>
-
-      {/* Activity List */}
-      <ActivityContainer>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>Activity Reference</Text>
-        <FlatList
-          data={activities}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ActivityRow>
-              <ActivityText>{item.reference}</ActivityText>
-              <StatusText>{item.status}</StatusText>
-            </ActivityRow>
-          )}
-        />
-      </ActivityContainer>
-    </GradientBackground>
-    </Container>
+      <RightIconsContainer>
+        <IconButton onPress={handleSearchPress}>
+          <Feather name="search" size={24} color="black" />
+        </IconButton>
+        <IconButton onPress={handleBellPress}>
+          <Feather name="bell" size={24} color="black" />
+        </IconButton>
+      </RightIconsContainer>
+    </HeaderContainer>
   );
 };
 
-export default HomePage;
+export default HomeScreen;

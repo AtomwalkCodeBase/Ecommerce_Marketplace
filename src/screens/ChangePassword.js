@@ -2,7 +2,7 @@ import React, {useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated, Easing } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useNavigation, useRouter } from "expo-router";
-import HeaderComponent from './HeaderComponent';
+import HeaderComponent from '../components/HeaderComponent';
 const ResetPasswordScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -64,8 +64,10 @@ const ResetPasswordScreen = () => {
 
   return (
     <>
-    <HeaderComponent headerTitle={`${userPin?"Update Your PIN":"Set Your PIN"}`} onBackPress={() => navigation.goBack()}></HeaderComponent>
-    
+    <HeaderComponent
+      title={userPin?"Update Your PIN":"Set Your PIN"}
+      onLeftPress={() => navigation.goBack()}
+    />
     <View style={styles.container}>
     
       <Text style={styles.title}>{userPin?"Update Your PIN":"Set Your PIN"}</Text>

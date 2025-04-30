@@ -5,10 +5,11 @@ import { View, Text } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { AppContext } from '../../context/AppContext';
 import { getProfileInfo } from '../services/authServices';
-import HeaderComponent from './HeaderComponent';
+import HeaderComponent from '../components/HeaderComponent'; 
 import { useNavigation, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutRight } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Styled components
 const Container = styled.View`
@@ -147,8 +148,11 @@ const ProfileScreen = () => {
   };
 
   return (
-    <>
-      <HeaderComponent headerTitle="My Profile" onBackPress={handleBackPress} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f9f9fb' }}>
+      <HeaderComponent 
+      title={"Profile"}
+      onLeftPress={handleBackPress}      
+      />
       <Container>
         <AvatarContainer entering={FadeIn.duration(700)} exiting={FadeOut.duration(500)}>
           <ProfileImage source={{ uri: profile?.image }} />
@@ -199,7 +203,7 @@ const ProfileScreen = () => {
           <ChangePasswordText>{userPin?"Update Your Pin":"Set Your Pin"}</ChangePasswordText>
         </ChangePasswordButton>
       </Container>
-    </>
+    </SafeAreaView>
   );
 };
 

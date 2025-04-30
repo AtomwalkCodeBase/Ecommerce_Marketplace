@@ -1,48 +1,52 @@
 import React from 'react';
-import { Text, Image, Dimensions } from 'react-native';
-import styled from 'styled-components/native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-
-const { width, height } = Dimensions.get('window');
-
-const HeaderContainer = styled.View`
-  background-color: white;
-  padding: 15px 10px;
-  margin-top: ${height < 806 ? '20px' : '48px'};
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom-width: 1px;
-  border-bottom-color: #ccc;
-  elevation: 2;
-  width: 100%;
-
-`;
-
-// Styled text for the header title
-const HeaderText = styled.Text`
-  font-size: ${props => (props.width < 360 ? '18px' : '20px')};
-  font-weight: bold;
-`;
-
-// Styled container for the back button
-const BackButton = styled.TouchableOpacity`
-  padding: 5px;
-`;
-
-// Path to the local back icon
-const BackIcon = require('../../assets/images/back_icon.png'); // Adjust the path according to your file structure
-
-const HeaderComponent = ({ headerTitle, onBackPress }) => {
+const HeaderComponent = ({
+  title,
+  onLeftPress,
+  leftIcon = 'arrow-back',
+  backgroundColor = '#fff',
+  textColor = '#000',
+  showLeftIcon = true,
+}) => {
   return (
-    <HeaderContainer>
-      
-      <HeaderText>{headerTitle}</HeaderText>
-      <BackButton onPress={onBackPress}>
-        <Image source={BackIcon} style={{ width: 24, height: 24 }} />
-      </BackButton>
-    </HeaderContainer>
+    <SafeAreaView style={{ backgroundColor }}>
+      <View style={[styles.container, { backgroundColor }]}>
+        {showLeftIcon ? (
+          <TouchableOpacity onPress={onLeftPress}>
+            <Ionicons name={leftIcon} size={24} color={textColor} />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 24 }} />
+        )}
+
+        <Text style={[styles.title, { color: textColor }]} numberOfLines={1}>
+          {title}
+        </Text>
+
+        {/* Placeholder to balance layout */}
+        <View style={{ width: 24 }} />
+      </View>
+    </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+    height: Platform.OS === 'ios' ? 60 : 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+    textAlign: 'center',
+    paddingHorizontal: 10,
+  },
+});
 
 export default HeaderComponent;
