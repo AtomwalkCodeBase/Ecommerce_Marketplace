@@ -1,6 +1,6 @@
 import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, 
   getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getProductCategoryListURL, productListURL, userLoginURL,
-  addressListURL} from "./ConstantServices";
+  addressListURL, productDetailURL} from "./ConstantServices";
 import { authAxios, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
@@ -114,6 +114,9 @@ export function fetchAddressList(address_type) {
   
 }
 
+export function getProductDetails(id){
+  return authAxios(productDetailURL(id));
+}
 
 //Customer Login
 export function customerLogin(username, password) {

@@ -1,14 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// const getDbName = async () => {
-//   let dbName = await AsyncStorage.getItem('dbName');
-//   return dbName;
-// }
-// const localhost = "https://www.atomwalk.com"
+const getDbName = async () => {
+  let dbName = await AsyncStorage.getItem('dbName');
+  return dbName;
+}
 const localhost = "https://www.atomwalk.com"
 
 const apiURL = "/api";
-const db_name = "PMA_00001";
+const db_name = getDbName(); 
+// const db_name = "PMA_00001";
 
 export const endpoint = `${localhost}${apiURL}`;
 
