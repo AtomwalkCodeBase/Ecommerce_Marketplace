@@ -16,6 +16,7 @@ export default function RootLayout() {
       <Stack.Screen name="ResetPassword/index" options={{headerShown:false}}/>
       <Stack.Screen name="ProductDetail/index" options={{headerShown:false}}/>
       <Stack.Screen name="LocationScreen/index" options={{headerShown:false}}/>
+      <Stack.Screen name="SearchScreen/index" options={{headerShown:false}}/>
       <Stack.Screen name="ProductListScreen/index" options={{headerShown:false}}/>
 
     </Stack>

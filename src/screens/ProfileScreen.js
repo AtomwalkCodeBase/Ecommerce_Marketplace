@@ -227,7 +227,7 @@ const ProfileScreen = () => {
     <SafeAreaView style={styles.container}>
     
     {/* Header */}
-    <Header isHomePage={false} title={"Profile"} />
+    <Header isHomePage={true} title={"Profile"} />
 
     {/* Profile Info */}
     <View style={styles.profileInfoContainer}>

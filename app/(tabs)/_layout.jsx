@@ -8,51 +8,78 @@ import { colors } from "../../src/Styles/appStyle";
 import { StyleSheet, Text } from "react-native";
 import { View } from "react-native";
 
-
-// const TabIcon = ({ focused, IconComponent, iconName, title }) => {
-//   if (focused) {
-//     return (
-//       <View
-//         // source={highlightImage}
-//         style={styles.focusedContainer}
-//         accessible
-//         accessibilityLabel={`${title} tab, selected`}
-//       >
-//         <IconComponent name={iconName} size={20} color={colors.primary} />
-//         <Text style={styles.focusedText}>{title}</Text>
-//       </View>
-//     );
-//   }
-//   return (
-//     <View
-//       style={styles.unfocusedContainer}
-//       accessible
-//       accessibilityLabel={`${title} tab`}
-//     >
-//       <IconComponent name={iconName} size={20} color="wh" />
-//     </View>
-//   );
-// };
+const TabIcon = ({ focused, IconComponent, iconName, title }) => {
+  if (focused) {
+    return (
+      <View
+        style={styles.focusedContainer}
+        // accessible
+        accessibilityLabel={`${title} tab, selected`}
+      >
+        <IconComponent name={iconName} size={24} color={colors.primary} />
+        <Text style={styles.focusedText}>{title}</Text>
+      </View>
+    );
+  }
+  return(
+    <View
+      style={styles.unfocusedContainer}
+      // accessible
+      accessibilityLabel={`${title} tab`}
+    >
+      <IconComponent name={iconName} size={22} color={colors.border} />
+      <Text style={styles.unfocused}>{title}</Text>
+    </View>
+  )
+}
+  
 
 
 const _layout = () => {
   const cartItems = useSelector((state) => state.cart.cartItems);
   const cartCount = cartItems.length;
   return (
-    <Tabs>
+    <Tabs 
+    screenOptions={{
+      tabBarShowLabel: false,
+      // headerShown: false,
+      tabBarStyle: {
+        height: 60,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        borderLeftWidth: 0.2,
+        borderRightWidth: 0.2,
+        paddingTop: 7,
+      },
+      tabBarItemStyle: {
+        width: "100%",
+        height: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+      },
+      // tabBarStyle: styles.tabBar,
+      // tabBarItemStyle: styles.tabBarItem,
+      // tabBarActiveTintColor: colors.primary,
+      // tabBarInactiveTintColor: colors.muted,
+      // tabBarLabelStyle: { fontSize: 12 },
+      // tabBarIconStyle: { display: "none" },
+      // tabBarShowLabel: false,
+      // tabBarHideOnKeyboard: true,
+    }}
+    >
       <Tabs.Screen
         name="home"
         options={{
           title: "Home",
           headerShown: false,
-          // tabBarIcon: ({ focused }) => (
-          //   <TabIcon
-          //     focused={focused}
-          //     IconComponent={FontAwesome}
-          //     iconName="home"
-          //     title="Home"
-          //   />
-          // ),
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              focused={focused}
+              IconComponent={FontAwesome}
+              iconName="home"
+              title="Home"
+            />
+          ),
         }}
       />
 
@@ -61,22 +88,16 @@ const _layout = () => {
         options={{
           title: "Orders",
           headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Feather name="package" size={24} color={color} />
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              focused={focused}
+              IconComponent={Feather}
+              iconName="package"
+              title="Orders"
+            />
           ),
         }}
       />
-{/* 
-      <Tabs.Screen
-        name="category"
-        options={{
-          title: "Category",
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <MaterialIcons name="category" size={24} color="black" />
-          ),
-        }}
-      /> */}
 
         <Tabs.Screen
         name="cart"
@@ -84,8 +105,16 @@ const _layout = () => {
           title: "Cart",
           headerShown: false,
           tabBarBadge: cartCount > 0 ? cartCount : null,
-          tabBarIcon: ({ color }) => (
-            <Feather name="shopping-cart" size={24} color={color} />
+          // tabBarIcon: ({ color }) => (
+          //   <Feather name="shopping-cart" size={24} color={color} />
+          // ),
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              focused={focused}
+              IconComponent={Feather}
+              iconName="shopping-cart"
+              title="Cart"
+            />
           ),
         }}
       />
@@ -95,8 +124,17 @@ const _layout = () => {
         options={{
           title: "Profile",
           headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="people" size={24} color={color} />
+        //   tabBarIcon: ({ color }) => (
+        //     <Ionicons name="people" size={24} color={color} />
+        //   ),
+        // }}
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              focused={focused}
+              IconComponent={Ionicons}
+              iconName="people"
+              title="Profile"
+            />
           ),
         }}
       />
@@ -126,7 +164,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   focusedContainer: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     gap: 4,
     width: '100%',
     flex: 1,
@@ -144,8 +182,8 @@ const styles = StyleSheet.create({
     tintColor: '#151312',
   },
   focusedText: {
-    color: colors.secondary || '#000', // Adjust based on your colors
-    fontSize: 16,
+    color: colors.primary || '#000', // Adjust based on your colors
+    fontSize: 14,
     fontWeight: '600',
   },
   unfocusedContainer: {
@@ -160,5 +198,10 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     tintColor: '#A8B5Db',
+  },
+  unfocused: {
+    color: colors.border || '#A8B5Db', // Adjust based on your colors
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

@@ -1,14 +1,17 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components/native';
 import { ScrollView, TouchableOpacity, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import BannerImg from '../../assets/images/banner.png';
 import Header from '../components/Header';
 import ProductGrid from '../components/ProductGrid';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchProducts } from '../redux/slice/productSlice';
 import { fetchCategories } from '../redux/slice/categorySlice';
+import { colors } from "../Styles/appStyle";
+import { FlatList } from 'react-native';
+import { RefreshControl } from 'react-native';
 
 
 const BannerImage = styled.Image`
@@ -61,7 +64,50 @@ const SeeMoreText = styled(TouchableOpacity)`
   padding: 4px 8px;
 `;
 
+const ProductList = styled(FlatList)`
+  margin: 0 16px;
+`;
+
+const ProductCard = styled.TouchableOpacity`
+  width: 48%;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+`;
+
+const ProductImage = styled.Image`
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  resize-mode: cover;
+`;
+
+const ProductName = styled.Text`
+  font-size: 12px;
+  text-align: center;
+  color: black;
+  margin-bottom: 4px;
+`;
+
+const ProductPrice = styled.Text`
+  font-size: 14px;
+  color: black;
+  font-weight: bold;
+`;
+
+const OriginalPrice = styled.Text`
+  font-size: 12px;
+  color: #888;
+  text-decoration: line-through;
+  margin-left: 4px;
+`;
+
 const HomeScreen = () => {
+  const pathname = usePathname();
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
   const { products, productLoading, productError } = useSelector((state) => state.product);
@@ -70,12 +116,12 @@ const HomeScreen = () => {
   useEffect(() => {
     dispatch(fetchProducts());
     dispatch(fetchCategories());
-  }, [dispatch]);
+  }, []);
 
-  if (productLoading || categoryLoading) {
+  if (productLoading && categoryLoading) {
     return <Text style={{ textAlign: 'center', marginTop: 20 }}>Loading...</Text>;
   }
-  if (productError || categoryError) {
+  if (productError && categoryError) {
     return (
       <Text style={{ textAlign: 'center', marginTop: 20, color: 'red' }}>
         Error: {productError || categoryError}
@@ -106,10 +152,16 @@ const HomeScreen = () => {
     });
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([dispatch(fetchProducts()), dispatch(fetchCategories())]);
+    setRefreshing(false);
+  };
+
   return (
     <>
-      <Header title="AW-Ecommerce" />
-      <ScrollView style={{ backgroundColor: '#fff' }} showsVerticalScrollIndicator={false}>
+      <Header title="AW-Ecommerce" isHomePage={true} currentRoute={pathname} />
+      <ScrollView style={{ backgroundColor: '#fff' }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />} >
         <BannerImage source={BannerImg} />
 
         <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
@@ -122,7 +174,7 @@ const HomeScreen = () => {
         </CategoryScroll>
 
         <SectionHeader>
-          <SectionTitle>New Arrivals</SectionTitle>
+          <SectionTitle>New Arrivals 🔥</SectionTitle>
           <SeeMoreText onPress={() => handleSeeMorePress('New Arrivals')}>
             <Text style={{ color: '#FF5500', fontSize: 14, fontWeight: 'bold' }}>See more</Text>
           </SeeMoreText>
@@ -134,7 +186,7 @@ const HomeScreen = () => {
         />
 
         <SectionHeader>
-          <SectionTitle>Top Trending</SectionTitle>
+          <SectionTitle>Top Trending 🔥</SectionTitle>
           <SeeMoreText onPress={() => handleSeeMorePress('Top Trending')}>
             <Text style={{ color: '#FF5500', fontSize: 14, fontWeight: 'bold' }}>See more</Text>
           </SeeMoreText>

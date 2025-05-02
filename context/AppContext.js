@@ -150,9 +150,9 @@ useEffect( () => {
 
   return (
     <AppContext.Provider value={{ state, login, logout, isLoading, userToken, companyInfo, dbName, error,setRefs,refs }}>
-      {/* <StatusBar barStyle="dark-content" backgroundColor={colors.white} /> */}
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       {/* <StatusBar barStyle="dark-content" backgroundColor="#FE7743" /> */}
-      <StatusBar  backgroundColor="#BE3D2A" />
+      {/* <StatusBar  backgroundColor="#BE3D2A" /> */}
       {children}
     </AppContext.Provider>
   );
