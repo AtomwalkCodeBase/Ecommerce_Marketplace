@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { useNavigation } from 'expo-router';
 import React from 'react';
 import styled from 'styled-components/native';
 
@@ -40,8 +41,19 @@ const RightIconsContainer = styled.View`
 `;
 
 const Header = ({ isHomePage = true ,handleMenuPress,  onBackPress , title }) => {
+
+  const navigation = useNavigation();
+
   const handleLeftIconPress = () => {
    isHomePage ? handleMenuPress() : onBackPress();
+  };
+
+  handleMenuPress = () => {
+    console.log("Menu pressed");
+  };
+
+  onBackPress = () => {
+    navigation.goBack();
   };
 
   const handleSearchPress = () => {
