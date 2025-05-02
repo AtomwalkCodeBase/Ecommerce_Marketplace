@@ -26,34 +26,6 @@ import Constants from "expo-constants";
 //   darkgrey: '#4c4c4c',
 // };
 
-
-
-// export const colors = {
-//   primary: "#FF5500",          // Main orange color used in active indicators and buttons
-//   secondary: "#ff550033",      // Fixed single # (was ##ff550033)
-//   tertiary: "#E6E6E6",         // Light gray used in backgrounds
-//   alternative: "#999999",      // Medium gray for secondary text
-//   lightblue: "#00B6FF",        // Blue accent color
-//   navyblue: "#1C0C3E",         // Dark blue for contrasting elements
-//   white: '#FFFFFF',            // White for backgrounds and text
-//   black: '#000000',            // Black for primary text
-//   blue: '#5D5FEE',             // Accent blue
-//   lightGray: '#F0F0F0',        // Light gray for cards and backgrounds (seen in product cards)
-//   gray: '#8A8A8A',             // Medium gray for secondary text (price descriptions)
-//   darkGray: '#4C4C4C',         // Darker gray for important text
-//   light: '#F7F7F7',            // Very light gray for page backgrounds
-//   orange: '#FF5500',           // Main brand color (same as primary)
-//   lightOrange: '#FFF3EE',      // Light orange for highlights
-//   activeOrange: '#FF7733',     // Slightly lighter orange for active states
-//   borderColor: '#E0E0E0',      // Color for borders
-//   red: '#FF3B30',              // Red for notifications, alerts, badges
-//   green: '#32CD32',            // Green for success states
-//   yellow: '#FFC300',           // Yellow for warnings
-//   bottomTabActive: '#FF5500',  // Active tab color
-//   bottomTabInactive: '#8E8E93', // Inactive tab color
-//   text: '#33302E'
-// };
-
 export const colors = {
   // Brand & Primary
   primary: '#FF5500',

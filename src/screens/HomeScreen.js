@@ -7,7 +7,8 @@ import BannerImg from '../../assets/images/banner.png';
 import { getProductCategoryList, productList } from '../services/productServices';
 import Header from '../components/Header';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetch_Product_Category } from '../redux/slice/product_category_Slice';
+import { fetchProducts } from '../redux/slice/productSlice';
+import { fetchCategories } from '../redux/slice/categorySlice';
 
 const HeaderContainer = styled.View`
   padding: 12px 18px;
@@ -139,7 +140,8 @@ const HomeScreen = () => {
   const [categoryList, setCategoryList] = useState([]);
   const [category, setCategory] = useState('');
   const dispatch = useDispatch();
-  const { products, categories, isLoading, isError } = useSelector((state) => state.Product_Category);
+  const { products, productLoading, productError } = useSelector((state) => state.product);
+  const { categories, categoryLoading, categoryError } = useSelector((state) => state.category);
 
   // const fetchCategories = async () => {
   //   try {
@@ -168,11 +170,12 @@ const HomeScreen = () => {
   // };
 
   useEffect(() => {
-    dispatch(fetch_Product_Category());
+    dispatch(fetchProducts());
+    dispatch(fetchCategories());
   }, []);
 
-  if (isLoading) return <Text>Loading...</Text>;
-  if (isError) return <Text>Error: {isError}</Text>;
+  if (productLoading && categoryLoading) return <Text>Loading...</Text>;
+  if (productError && categoryError) return <Text>Error: {isError}</Text>;
 
   const handleMenuPress = () => {
     console.log('Menu pressed');

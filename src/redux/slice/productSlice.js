@@ -11,22 +11,22 @@ const productSlice = createSlice({
   name: 'products',
   initialState: {
     products: [],
-    isLoading: false,
-    isError: null,
+    productLoading: false,
+    productError: null,
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchProducts.pending, (state) => {
-        state.isLoading = true;
-        state.isError = null;
+        state.productLoading = true;
+        state.productError = null;
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
-        state.isLoading = false;
+        state.productLoading = false;
         state.products = action.payload;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
-        state.isLoading = false;
-        state.isError = true;
+        state.productLoading = false;
+        state.productError = true;
 		console.log('Error fetching products:', action.payload.message);
       });
   },
