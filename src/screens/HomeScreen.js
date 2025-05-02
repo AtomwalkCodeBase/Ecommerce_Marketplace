@@ -4,6 +4,8 @@ import styled from 'styled-components/native';
 import { ScrollView, TouchableOpacity, Text, View } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import BannerImg from '../../assets/images/banner.png';
+import BannerImg2 from '../../assets/images/banner2.png';
+// import BannerImg3 from '../../assets/images/Atom_walk_logo.jpg';
 import Header from '../components/Header';
 import ProductGrid from '../components/ProductGrid';
 import { useDispatch, useSelector } from 'react-redux';
@@ -12,6 +14,7 @@ import { fetchCategories } from '../redux/slice/categorySlice';
 import { colors } from "../Styles/appStyle";
 import { FlatList } from 'react-native';
 import { RefreshControl } from 'react-native';
+import BannerSlider from '../components/BannerSlider';
 
 
 const BannerImage = styled.Image`
@@ -37,7 +40,7 @@ const CategoryImage = styled.Image`
   height: 60px;
   border-radius: 30px;
   margin-bottom: 6px;
-  resize-mode: contain;
+  resize-mode: cover;
   background-color: #ddd;
 `;
 
@@ -106,6 +109,7 @@ const OriginalPrice = styled.Text`
 `;
 
 const HomeScreen = () => {
+  const bannerImages = [BannerImg, BannerImg2]; 
   const pathname = usePathname();
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
@@ -162,7 +166,7 @@ const HomeScreen = () => {
     <>
       <Header title="AW-Ecommerce" isHomePage={true} currentRoute={pathname} />
       <ScrollView style={{ backgroundColor: '#fff' }} showsVerticalScrollIndicator={false} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />} >
-        <BannerImage source={BannerImg} />
+        <BannerSlider images={bannerImages} />
 
         <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
           {categories.map((item) => (
