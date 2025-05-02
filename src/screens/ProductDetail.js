@@ -1,163 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Image, ScrollView, TouchableOpacity, Dimensions, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  StyleSheet,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getProductDetails } from '../services/productServices';
 import HeaderComponent from '../components/HeaderComponent';
-import { Ionicons, AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
-import styled from 'styled-components/native';
+import { Feather, MaterialIcons } from '@expo/vector-icons';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToCart } from '../redux/slice/CartSlice';
+import { colors } from '../Styles/appStyle';
+import { buttonStyles } from '../Styles/ButtonStyles';
 
 const { width } = Dimensions.get('window');
-
-// Styled Components
-const Container = styled.ScrollView`
-  flex: 1;
-  background-color: #fff;
-`;
-
-const ImageContainer = styled.View`
-  width: 100%;
-  height: ${width}px;
-  position: relative;
-  background-color: #f8f8f8;
-`;
-
-const ProductImage = styled.Image`
-  width: 100%;
-  height: 100%;
-  resize-mode: contain;
-`;
-
-const ImageSlider = styled.ScrollView`
-  width: 100%;
-  height: 100%;
-`;
-
-const ImageActions = styled.View`
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  flex-direction: row;
-  gap: 12px;
-`;
-
-const ActionButton = styled.TouchableOpacity`
-  background-color: rgba(255, 255, 255, 0.8);
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
-  justify-content: center;
-  align-items: center;
-`;
-
-const DotContainer = styled.View`
-  position: absolute;
-  bottom: 16px;
-  left: 0;
-  right: 0;
-  flex-direction: row;
-  justify-content: center;
-`;
-
-const Dot = styled.View`
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
-  background-color: ${props => props.active ? '#FF5500' : '#ccc'};
-  margin: 0 4px;
-`;
-
-const ProductInfo = styled.View`
-  padding: 16px;
-`;
-
-const CategoryText = styled.Text`
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 4px;
-`;
-
-const ProductTitle = styled.Text`
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #333;
-`;
-
-const PriceContainer = styled.View`
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const SellingPrice = styled.Text`
-  font-size: 20px;
-  font-weight: bold;
-  color: #FF5500;
-`;
-
-const DescriptionContainer = styled.View`
-  padding: 16px;
-`;
-
-const ReadMoreContainer = styled.View`
-  align-items: flex-end;
-  margin-top: 8px;
-`;
-
-const ReadMoreText = styled.Text`
-  color: #FF5500;
-`;
-
-const SectionTitle = styled.Text`
-  font-size: 18px;
-  font-weight: bold;
-  padding: 16px 16px 8px;
-  color: #333;
-  border-top-width: 1px;
-  border-top-color: #eee;
-`;
-
-const ReviewsContainer = styled.View`
-  padding: 16px;
-  border-top-width: 1px;
-  border-top-color: #eee;
-`;
-
-const ButtonContainer = styled.View`
-  flex-direction: row;
-  padding: 16px;
-  gap: 16px;
-  background-color: #fff;
-  border-top-width: 1px;
-  border-top-color: #eee;
-`;
-
-const PrimaryButton = styled.TouchableOpacity`
-  flex: 1;
-  background-color: #FF5500;
-  padding: 16px;
-  border-radius: 8px;
-  align-items: center;
-`;
-
-const SecondaryButton = styled.TouchableOpacity`
-  flex: 1;
-  background-color: #fff;
-  border: 1px solid #FF5500;
-  padding: 16px;
-  border-radius: 8px;
-  align-items: center;
-`;
-
-const ButtonText = styled.Text`
-  color: ${props => props.secondary ? '#FF5500' : '#fff'};
-  font-weight: bold;
-  font-size: 16px;
-`;
 
 const ProductDetail = () => {
   const { productId } = useLocalSearchParams();
   const router = useRouter();
+  const dispatch = useDispatch();
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -165,11 +32,15 @@ const ProductDetail = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
 
+  const cartItems = useSelector((state) => state.cart.cartItems);
+
+
+  const isInCart = cartItems.some((item) => item.id === parseInt(productId));
+
   const fetchProductDetails = async () => {
     try {
-      setLoading(true);
-      const res = await getProductDetails(productId);
-      setProduct(res.data);
+        const res = await getProductDetails(productId);
+        setProduct(res.data);
     } catch (error) {
       setError('Failed to load product details');
       console.log('Error fetching product details:', error);
@@ -193,14 +64,22 @@ const ProductDetail = () => {
   };
 
   const handleShare = () => {
-    // Implement share functionality
     console.log('Share product');
   };
 
+  const handleAddToCart = () => {
+    if (isInCart) {
+      router.push('/cart');
+    } else {
+      dispatch(addToCart(product));
+    }
+  };
+
+
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#FF5500" />
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={{ marginTop: 16 }}>Loading product details...</Text>
       </View>
     );
@@ -208,141 +87,255 @@ const ProductDetail = () => {
 
   if (error) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#ff0000', fontSize: 16 }}>{error}</Text>
+      <View style={styles.loaderContainer}>
+        <Text style={{ color: colors.error, fontSize: 16 }}>{error}</Text>
       </View>
     );
   }
 
   if (!product) return null;
 
-  const images = product.c_images && product.c_images.length > 0 
-    ? product.c_images 
-    : product.image 
-      ? [product.image] 
-      : []; // Fallback for no images
+  const images =
+    product.c_images?.length > 0
+      ? product.c_images
+      : product.image
+      ? [product.image]
+      : [];
 
-  const shortDescription = product.description && product.description.length > 175 
-    ? product.description.substring(0, 175) + '...' 
-    : product.description || 'No description available';
+  const shortDescription =
+    product.description && product.description.length > 175
+      ? product.description.substring(0, 175) + '...'
+      : product.description || 'No description available';
 
   return (
-    <View style={{ flex: 1 }}>
-      <Container>
-        <HeaderComponent 
-          title="Product Details" 
-          onLeftPress={() => router.back()} 
-        />
+    <ScrollView style={styles.container}>
+      <HeaderComponent title="Product Details" onLeftPress={() => router.back()} />
 
-        {/* Image Slider - Only render if we have images */}
-        {images.length > 0 ? (
-          <ImageContainer>
-            <ImageSlider
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              onScroll={handleImageScroll}
-              scrollEventThrottle={16}
-            >
-              {images.map((img, index) => (
-                <View key={index} style={{ width, height: width }}>
-                  <ProductImage source={{ uri: img }} />
-                </View>
+      {/* Image Slider */}
+      {images.length > 0 ? (
+        <View style={styles.imageContainer}>
+          <ScrollView
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleImageScroll}
+            scrollEventThrottle={16}
+          >
+            {images.map((img, index) => (
+              <View key={index} style={{ width, height: width }}>
+                <Image source={{ uri: img }} style={styles.productImage} />
+              </View>
+            ))}
+          </ScrollView>
+
+          {/* Share and Favorite */}
+          <View style={styles.imageActions}>
+            <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
+              <Feather name="share-2" size={20} color="#333" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton} onPress={toggleFavorite}>
+              <MaterialIcons
+                name={isFavorite ? 'favorite' : 'favorite-border'}
+                size={20}
+                color={isFavorite ? colors.primary : '#333'}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Dots */}
+          {images.length > 1 && (
+            <View style={styles.dotContainer}>
+              {images.map((_, index) => (
+                <View key={index} style={styles.dot(index === currentImageIndex)} />
               ))}
-            </ImageSlider>
-
-            <ImageActions>
-              <ActionButton onPress={handleShare}>
-                <Feather name="share-2" size={20} color="#333" />
-              </ActionButton>
-              <ActionButton onPress={toggleFavorite}>
-                <MaterialIcons 
-                  name={isFavorite ? "favorite" : "favorite-border"} 
-                  size={20} 
-                  color={isFavorite ? "#FF5500" : "#333"} 
-                />
-              </ActionButton>
-            </ImageActions>
-
-            {images.length > 1 && (
-              <DotContainer>
-                {images.map((_, index) => (
-                  <Dot key={index} active={index === currentImageIndex} />
-                ))}
-              </DotContainer>
-            )}
-          </ImageContainer>
-        ) : (
-          <ImageContainer style={{ justifyContent: 'center', alignItems: 'center' }}>
-            <Text>No image available</Text>
-          </ImageContainer>
-        )}
-
-        <ProductInfo>
-          <CategoryText>{product.category || 'Uncategorized'}</CategoryText>
-          <ProductTitle>{product.product_name || 'Untitled Product'}</ProductTitle>
-          <PriceContainer>
-            <SellingPrice>₹{product.selling_price}</SellingPrice>
-          </PriceContainer>
-          <Text style={{ marginTop: 8, color: product.available_qty > 0 ? 'green' : 'red' }}>
-            {product.available_qty > 0 ? 'In Stock' : 'Out of Stock'}
-          </Text>
-        </ProductInfo>
-
-        {/* Description Section */}
-        <SectionTitle>Description</SectionTitle>
-        <DescriptionContainer>
-          <Text style={{ fontSize: 16, lineHeight: 24, color: '#555' }}>
-            {showFullDescription ? product.description : shortDescription}
-          </Text>
-          {product.description && product.description.length > 150 && (
-            <ReadMoreContainer>
-              <TouchableOpacity onPress={() => setShowFullDescription(!showFullDescription)}>
-                <ReadMoreText>
-                  {showFullDescription ? 'Show less' : 'Read more'}
-                </ReadMoreText>
-              </TouchableOpacity>
-            </ReadMoreContainer>
+            </View>
           )}
-        </DescriptionContainer>
-
-        {/* Similar Products Section */}
-        <SectionTitle>Similar Products</SectionTitle>
-        <View style={{ padding: 16 }}>
-          <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>
-            No similar products found
-          </Text>
         </View>
+      ) : (
+        <View style={[styles.imageContainer, styles.centered]}>
+          <Text>No image available</Text>
+        </View>
+      )}
 
-        {/* Reviews Section */}
-        <ReviewsContainer>
-          <SectionTitle>Reviews (0)</SectionTitle>
-          <Text style={{ fontSize: 16, color: '#666', textAlign: 'center' }}>
-            No reviews yet
+      <View style={styles.productInfo}>
+        <Text style={styles.categoryText}>{product.category || 'Uncategorized'}</Text>
+        <Text style={styles.productTitle}>{product.product_name || 'Untitled Product'}</Text>
+        <Text style={styles.sellingPrice}>₹{product.selling_price}</Text>
+        <Text
+          style={[
+            styles.stockText,
+            { color: product.available_qty > 0 ? 'green' : 'red' },
+          ]}
+        >
+          {product.available_qty > 0 ? 'In Stock' : 'Out of Stock'}
+        </Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>Description</Text>
+      <View style={styles.descriptionContainer}>
+        <Text style={styles.descriptionText}>
+          {showFullDescription ? product.description : shortDescription}
+        </Text>
+        {product.description && product.description.length > 150 && (
+          <TouchableOpacity onPress={() => setShowFullDescription(!showFullDescription)}>
+            <Text style={styles.readMoreText}>
+              {showFullDescription ? 'Show less' : 'Read more'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <Text style={styles.sectionTitle}>Similar Products</Text>
+      <View style={styles.similarContainer}>
+        <Text style={styles.similarText}>No similar products found</Text>
+      </View>
+
+      <View style={styles.reviewsContainer}>
+        <Text style={styles.sectionTitle}>Reviews (0)</Text>
+        <Text style={styles.similarText}>No reviews yet</Text>
+      </View>
+
+      {/* Action Buttons */}
+      <View style={styles.buttonContainer}>
+      <TouchableOpacity style={buttonStyles.secondary} onPress={handleAddToCart}>
+          <Text style={buttonStyles.secondaryText}>
+            {isInCart ? 'Go to cart' : 'Add to Cart'}
           </Text>
-        </ReviewsContainer>
+        </TouchableOpacity>
 
-        {/* Action Buttons */}
-        <ButtonContainer>
-          <SecondaryButton>
-            <ButtonText secondary>Add to Cart</ButtonText>
-          </SecondaryButton>
-          <PrimaryButton disabled={product.available_qty <= 0}>
-            <ButtonText>Buy Now</ButtonText>
-          </PrimaryButton>
-        </ButtonContainer>
-      </Container>
-    </View>
+        <TouchableOpacity
+          style={[
+            buttonStyles.primary,
+            { opacity: product.available_qty <= 0 ? 0.6 : 1 },
+          ]}
+          disabled={product.available_qty <= 0}
+        >
+          <Text style={buttonStyles.primaryText}>Buy Now</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
 
 export default ProductDetail;
 
+// StyleSheet
 const styles = StyleSheet.create({
-  imageSlide: {
-    width: width,
-    height: width,
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  loaderContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  imageContainer: {
+    width: '100%',
+    height: width,
+    position: 'relative',
+    // backgroundColor: colors.muted,
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
+  imageActions: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionButton: {
+    marginLeft: 12,
+    backgroundColor: '#fff',
+    padding: 8,
+    borderRadius: 20,
+  },
+  dotContainer: {
+    position: 'absolute',
+    bottom: 12,
+    alignSelf: 'center',
+    flexDirection: 'row',
+  },
+  dot: (active) => ({
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: active ? colors.primary : colors.muted,
+    marginHorizontal: 4,
+  }),
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productInfo: {
+    padding: 16,
+  },
+  categoryText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  productTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  sellingPrice: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.primary,
+  },
+  stockText: {
+    marginTop: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+    borderTopWidth: 1,
+    borderTopColor: colors.muted,
+    color: colors.textPrimary,
+  },
+  descriptionContainer: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  descriptionText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.textSecondary,
+  },
+  readMoreText: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    color: colors.primary,
+    textAlign: 'right',
+  },
+  similarContainer: {
+    padding: 16,
+  },
+  similarText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  reviewsContainer: {
+    paddingVertical: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 16,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.muted,
   },
 });

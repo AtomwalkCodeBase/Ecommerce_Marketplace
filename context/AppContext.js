@@ -4,9 +4,10 @@ import { publicAxiosRequest } from "../src/services/HttpMethod";
 import { loginURL } from "../src/services/ConstantServices";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getCompanyInfo} from '../src/services/authServices'
-import { Alert } from 'react-native'
+import { Alert, StatusBar } from 'react-native'
 import axios from "axios";
 import { useRouter } from 'expo-router';
+import { colors } from '../src/Styles/appStyle';
 
 // import { useRoute } from '@react-navigation/native';
 
@@ -149,6 +150,9 @@ useEffect( () => {
 
   return (
     <AppContext.Provider value={{ state, login, logout, isLoading, userToken, companyInfo, dbName, error,setRefs,refs }}>
+      {/* <StatusBar barStyle="dark-content" backgroundColor={colors.white} /> */}
+      {/* <StatusBar barStyle="dark-content" backgroundColor="#FE7743" /> */}
+      <StatusBar  backgroundColor="#BE3D2A" />
       {children}
     </AppContext.Provider>
   );

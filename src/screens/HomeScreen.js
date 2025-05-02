@@ -5,6 +5,9 @@ import { ScrollView, TouchableOpacity, Text, View, FlatList } from 'react-native
 import { useRouter } from 'expo-router';
 import BannerImg from '../../assets/images/banner.png';
 import { getProductCategoryList, productList } from '../services/productServices';
+import Header from '../components/Header';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetch_Product_Category } from '../redux/slice/product_category_Slice';
 
 const HeaderContainer = styled.View`
   padding: 12px 18px;
@@ -135,39 +138,41 @@ const HomeScreen = () => {
   const [loading, setLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const [category, setCategory] = useState('');
-  const [products, setProducts] = useState([]);
+  const dispatch = useDispatch();
+  const { products, categories, isLoading, isError } = useSelector((state) => state.Product_Category);
 
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const res = await getProductCategoryList();
-      setCategory(res.data[1].name);
-      setCategoryList(res.data);
-      console.log('Category - List', res.data);
-    } catch (error) {
-      console.log('Error fetching categories:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchCategories = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await getProductCategoryList();
+  //     setCategoryList(res.data);
+  //     console.log('Category - List', res.data);
+  //   } catch (error) {
+  //     console.log('Error fetching categories:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await productList();
-      setProducts(res.data);
-      console.log('Product - List', res.data);
-    } catch (error) {
-      console.log('Error fetching products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchProducts = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const res = await productList();
+  //     setProducts(res.data);
+  //     console.log('Product - List', res.data);
+  //   } catch (error) {
+  //     console.log('Error fetching products:', error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
+    dispatch(fetch_Product_Category());
   }, []);
+
+  if (isLoading) return <Text>Loading...</Text>;
+  if (isError) return <Text>Error: {isError}</Text>;
 
   const handleMenuPress = () => {
     console.log('Menu pressed');
@@ -205,27 +210,12 @@ const HomeScreen = () => {
 
   return (
     <ScrollView style={{ backgroundColor: '#fff' }}>
-      <HeaderContainer>
-        <LeftIcon onPress={handleMenuPress}>
-          <Feather name="menu" size={24} color="black" />
-        </LeftIcon>
-
-        <Title>AW-Ecommerce</Title>
-
-        <RightIconsContainer>
-          <IconButton onPress={handleSearchPress}>
-            <Feather name="search" size={24} color="black" />
-          </IconButton>
-          <IconButton onPress={handleBellPress}>
-            <Feather name="bell" size={24} color="black" />
-          </IconButton>
-        </RightIconsContainer>
-      </HeaderContainer>
+      <Header title={"AW-Ecommerce"} />
 
       <BannerImage source={BannerImg} />
 
       <CategoryScroll horizontal showsHorizontalScrollIndicator={false}>
-        {categoryList.map((item) => (
+        {categories.map((item) => (
           <CategoryContainer key={item.id} onPress={() => console.log(`Category ${item.name} pressed`)}>
             <CategoryImage source={{ uri: item.image }} />
             <CategoryText>{item.name}</CategoryText>
