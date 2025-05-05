@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   unfocusedContainer: {
-    width: '100%',
+    width: 100,
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',

@@ -7,17 +7,17 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
     <AppProvider>
-    <Stack>
+    <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index"/>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       
-      <Stack.Screen name="AuthScreen/index" options={{headerShown:false}}/> 
-      <Stack.Screen name="PinScreen/index" options={{headerShown:false}}/> 
-      <Stack.Screen name="ResetPassword/index" options={{headerShown:false}}/>
-      <Stack.Screen name="ProductDetail/index" options={{headerShown:false}}/>
-      <Stack.Screen name="LocationScreen/index" options={{headerShown:false}}/>
-      <Stack.Screen name="SearchScreen/index" options={{headerShown:false}}/>
-      <Stack.Screen name="ProductListScreen/index" options={{headerShown:false}}/>
+      <Stack.Screen name="AuthScreen/index"/> 
+      <Stack.Screen name="PinScreen/index"/> 
+      <Stack.Screen name="ResetPassword/index"/>
+      <Stack.Screen name="ProductDetail/index"/>
+      <Stack.Screen name="LocationScreen/index"/>
+      <Stack.Screen name="SearchScreen/index"/>
+      <Stack.Screen name="ProductListScreen/index"/>
 
     </Stack>
     </AppProvider>

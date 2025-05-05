@@ -24,7 +24,7 @@ const BannerSlider = ({
   const animateIndicator = (activeIndex) => {
     animatedValues.forEach((anim, index) => {
       Animated.timing(anim, {
-        toValue: index === activeIndex ? 1.6 : 1,
+        toValue: index === activeIndex ? 1.4 : 1,
         duration: 250,
         useNativeDriver: false,
       }).start();
