@@ -1,7 +1,8 @@
 import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, 
   getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getProductCategoryListURL, productListURL, userLoginURL,
-  addressListURL, productDetailURL} from "./ConstantServices";
-import { authAxios, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
+  addressListURL, addressCreateURL, addressDeleteURL, addressUpdateURL, productDetailURL,
+  setDefaultAddressURL} from "./ConstantServices";
+import { authAxios, authAxiosDelete, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
 
 export function getEmpLeave(leave_type , emp_id, year) {
     let data = {};
@@ -126,4 +127,23 @@ export function customerLogin(username, password) {
   };
   // console.log('userLogin')
   return authAxiosPost(userLoginURL, data);
+}
+
+export function addAddress(address_data) {
+  console.log(address_data)
+  return authAxiosPost(addressCreateURL, {'address_data': address_data});
+}
+
+export function updateAddress(address_data) {
+  console.log(address_data.id, address_data);
+  return authAxiosPost(addressUpdateURL, {'address_data': address_data});
+}
+
+export function deleteAddress(id) {
+  return authAxiosDelete(addressDeleteURL(id));
+}
+
+export function setDefaultAddress(address_data) {
+  console.log(address_data.id, address_data)
+  return authAxiosPost(setDefaultAddressURL, {'address_data': address_data});
 }

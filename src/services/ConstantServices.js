@@ -26,8 +26,10 @@ export const customerIDURL = `${endpoint}/user_customer_id/${db_name}/`;
 export const addressListURL = addressType =>
   `${endpoint}/addresses/${db_name}/?address_type=${addressType}`;
 export const addressCreateURL = `${endpoint}/address/create/${db_name}/`;
-export const addressUpdateURL = id => `${endpoint}/address/update/${db_name}/${id}/`;
+// export const addressUpdateURL = id => `${endpoint}/address/update/${db_name}/${id}/`;
+export const addressUpdateURL = `${endpoint}/address/update/${db_name}/`;
 export const addressDeleteURL = id => `${endpoint}/address/delete/${db_name}/${id}/`;
+export const setDefaultAddressURL = `${endpoint}/address/set_default/${db_name}/`;
 export const userSignUpURL = `${endpoint}/customer_sign_up/${db_name}/`;
 export const userLoginURL = `${endpoint}/customer_user_login/${db_name}/`;
 export const loginURL = `${localhost}/rest-auth/login/`;

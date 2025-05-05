@@ -3,124 +3,85 @@ import {
   StyleSheet, 
   Text, 
   View, 
-  TextInput, 
   TouchableOpacity, 
   ActivityIndicator,
-  Alert,
-  ScrollView,
   FlatList
 } from 'react-native';
 import * as Location from 'expo-location';
 import { Ionicons } from '@expo/vector-icons';
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+  fetchAddresses, 
+  addNewAddress, 
+  updateExistingAddress, 
+  deleteExistingAddress,
+  DefaultAddress, 
+  setSelectedAddressId, 
+  resetError 
+} from '../redux/slice/addressSlice'; // Adjust path as needed
+import InputField from '../components/InputField'; // Adjust path as needed
+import { ErrorModal, SuccessModal } from '../components/Modal'; // Adjust path as needed
+import { colors } from '../Styles/appStyle';
+// import ErrorModal from './Modals'; // Adjust path as needed
 
-// Import your color theme
-const colors = {
-  // Brand & Primary
-  primary: '#FF5500',
-  primaryTransparent: '#ff550033',
-  
-  // Text
-  textPrimary: '#000000',
-  textSecondary: '#777E90',
-  textOnPrimary: '#FFFFFF',
-  
-  // Backgrounds
-  background: '#FFFFFF',
-  backgroundDark: '#353945',
-  backgroundDarker: '#1E1E1E',
-  
-  // Borders & Divider
-  border: '#9B9B9A',
-  
-  // Status
-  error: '#ED1010',
-  success: 'green',
-  warning: '#FFC300',
-  muted: '#eee',
-  
-  // Utility
-  black: '#000000',
-  white: '#FFFFFF',
-};
-
-// A unique ID generator for addresses
-const generateId = () => Math.random().toString(36).substring(2, 15);
 
 const AddressManagementComponent = () => {
-  // Form fields
-  const [name, setName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [zipCode, setZipCode] = useState('');
-  const [country, setCountry] = useState('');
-  const [loading, setLoading] = useState(false);
+  // Local state for form and UI
+  const [inputs, setInputs] = useState({
+    contact_name: '',
+    mobile_number: '',
+    address_line_1: '',
+    address_line_2: '',
+    location: '',
+    pin_code: '',
+  });
   const [locationPermission, setLocationPermission] = useState(null);
+  const [editingAddressId, setEditingAddressId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null); // Track address being deleted
+  const [successVisible, setSuccessVisible] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // Saved addresses
-  const [savedAddresses, setSavedAddresses] = useState([]);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  // Redux state and dispatch
+  const { addresses, selectedAddressId, loading, error } = useSelector((state) => state.address);
+  const dispatch = useDispatch();
 
+  // Fetch addresses on component mount and handle location permission
   useEffect(() => {
+    dispatch(fetchAddresses());
+
+    // Request location permission
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       setLocationPermission(status === 'granted');
     })();
+  }, [dispatch]);
 
-    // For demo: Add some sample addresses
-    setSavedAddresses([
-      {
-        id: '1',
-        name: 'John Doe',
-        phoneNumber: '555-123-4567',
-        address: '123 Main St',
-        city: 'New York',
-        state: 'NY',
-        zipCode: '10001',
-        country: 'USA',
-        isDefault: true
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        phoneNumber: '555-987-6543',
-        address: '456 Park Ave',
-        city: 'Los Angeles',
-        state: 'CA',
-        zipCode: '90001',
-        country: 'USA',
-        isDefault: false
-      }
-    ]);
-    
-    // Set the default address as selected
-    setSelectedAddressId('1');
-  }, []);
+  // Handle errors from Redux state
+  useEffect(() => {
+    if (error) {
+      setErrorMessage(error);
+      setErrorVisible(true);
+    }
+  }, [error]);
 
   const getLocationAsync = async () => {
-    setLoading(true);
     try {
       if (!locationPermission) {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-          Alert.alert(
-            "Permission Denied",
-            "Please grant location permissions to use this feature.",
-            [{ text: "OK" }]
-          );
-          setLoading(false);
+          setErrorMessage('Please grant location permissions to use this feature.');
+          setErrorVisible(true);
           return;
         }
         setLocationPermission(true);
       }
 
-      // Get current position
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
       
-      // Reverse geocode to get address
       const { latitude, longitude } = location.coords;
       const geocode = await Location.reverseGeocodeAsync({
         latitude,
@@ -129,111 +90,114 @@ const AddressManagementComponent = () => {
 
       if (geocode.length > 0) {
         const locationData = geocode[0];
-        setAddress(locationData.street || '');
-        setCity(locationData.city || '');
-        setState(locationData.region || '');
-        setZipCode(locationData.postalCode || '');
-        setCountry(locationData.country || '');
+        const formattedAddress = [
+          locationData.name,
+          locationData.street,
+          locationData.city,
+          locationData.region,
+          // locationData.postalCode
+        ].filter(Boolean).join(', ');
+
+        setInputs(prevState => ({
+          ...prevState,
+          address_line_1: formattedAddress || '',
+          location: locationData.street || locationData.name || '',
+          pin_code: locationData.postalCode || '',
+        }));
       }
     } catch (error) {
-      Alert.alert("Error", "Could not fetch location: " + error.message);
-      console.error("Error fetching location:", error);
-    } finally {
-      setLoading(false);
+      setErrorMessage('Could not fetch location: ' + error.message);
+      setErrorVisible(true);
     }
   };
 
-  const saveAddress = () => {
-    // Basic validation
-    if (!name || !phoneNumber || !address || !city || !state || !zipCode) {
-      Alert.alert("Missing Information", "Please fill in all required fields.");
+  const saveAddress = async () => {
+    if (!inputs.contact_name || !inputs.mobile_number || !inputs.address_line_1 || !inputs.pin_code) {
+      setErrorMessage('Please fill in all required fields.');
+      setErrorVisible(true);
       return;
     }
-
-    // Create a new address object
-    const newAddress = {
-      id: generateId(),
-      name,
-      phoneNumber,
-      address,
-      city,
-      state,
-      zipCode,
-      country,
-      isDefault: savedAddresses.length === 0, // First address is default
-    };
-
-    // Add to saved addresses
-    setSavedAddresses([...savedAddresses, newAddress]);
-    setSelectedAddressId(newAddress.id);
-    
-    // Clear form
-    resetForm();
-    
-    Alert.alert("Success", "Address has been saved successfully!");
+  
+    try {
+      if (editingAddressId) {
+        await dispatch(updateExistingAddress({  id: editingAddressId, ...inputs })).unwrap(); //Used .unwrap() to handle success alerts and trigger fetchAddresses to refresh the list.
+        setSuccessMessage('Address Updated Successfully');
+      } else {
+        await dispatch(addNewAddress(inputs)).unwrap();
+        setSuccessMessage('Address Added Successfully');
+      }
+      setSuccessVisible(true);
+      dispatch(fetchAddresses()); // Refresh address list
+      resetForm();
+      setEditingAddressId(null);
+    } catch (error) {
+      // Error is handled by Redux state and useEffect
+    }
   };
 
   const resetForm = () => {
-    setName('');
-    setPhoneNumber('');
-    setAddress('');
-    setCity('');
-    setState('');
-    setZipCode('');
-    setCountry('');
+    setInputs({
+      contact_name: '',
+      mobile_number: '',
+      address_line_1: '',
+      address_line_2: '',
+      location: '',
+      pin_code: '',
+    });
   };
 
-  const deleteAddress = (id) => {
-    Alert.alert(
-      "Delete Address",
-      "Are you sure you want to delete this address?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: () => {
-            const updatedAddresses = savedAddresses.filter(address => address.id !== id);
-            setSavedAddresses(updatedAddresses);
-            
-            // If we deleted the selected address, select another one if available
-            if (id === selectedAddressId && updatedAddresses.length > 0) {
-              setSelectedAddressId(updatedAddresses[0].id);
-            } else if (updatedAddresses.length === 0) {
-              setSelectedAddressId(null);
-            }
-          }
-        }
-      ]
-    );
+  const handleDeleteAddress = (id) => {
+    if (deletingId) return; // Prevent multiple deletions
+    setDeletingId(id);
+
+    dispatch(deleteExistingAddress(id))
+      .unwrap()
+      .then(() => {
+        dispatch(fetchAddresses()); // Refresh address list
+      })
+      .finally(() => {
+        setDeletingId(null);
+      });
   };
 
-  const setDefaultAddress = (id) => {
-    const updatedAddresses = savedAddresses.map(address => ({
-      ...address,
-      isDefault: address.id === id
-    }));
-    
-    setSavedAddresses(updatedAddresses);
-    setSelectedAddressId(id);
+  const setDefaultAddress = async (id) => {
+    try {
+      const address = addresses.find((addr) => addr.id === id);
+      if (!address) throw new Error('Address not found');
+      const addressData = {
+        // id,
+        name: address.contact_name,
+        mobile_number: address.mobile_number,
+        address_line_1: address.address_line_1,
+        address_line_2: address.address_line_2,
+        location: address.location,
+        pin_code: address.pin_code,
+      };
+      console.log("sshdcahd",addressData);
+      
+      await dispatch(DefaultAddress(addressData)).unwrap();
+      setSuccessMessage('Address Successfully updated as Default Address');
+      setSuccessVisible(true);
+      dispatch(fetchAddresses()); // Refresh address list
+    } catch (error) {
+      // Error is handled by Redux state and useEffect
+    }
   };
 
   const editAddress = (address) => {
-    // Fill the form with the address details for editing
-    setName(address.name);
-    setPhoneNumber(address.phoneNumber);
-    setAddress(address.address);
-    setCity(address.city);
-    setState(address.state);
-    setZipCode(address.zipCode);
-    setCountry(address.country);
-    
-    // Delete the old address
-    const updatedAddresses = savedAddresses.filter(addr => addr.id !== address.id);
-    setSavedAddresses(updatedAddresses);
+    setInputs({
+      id: address.id,
+      contact_name: address.contact_name || '',
+      mobile_number: address.mobile_number || '',
+      address_line_1: address.address_line_1 || '',
+      address_line_2: address.address_line_2 || '',
+      location: address.location || '',
+      pin_code: address.pin_code || '',
+    });
+    setEditingAddressId(address.id);
   };
 
-  const renderSavedAddress = ({ item }) => (
+  const renderAddress = ({ item }) => (
     <View style={styles.savedAddressCard}>
       <View style={styles.addressHeader}>
         <TouchableOpacity 
@@ -252,14 +216,15 @@ const AddressManagementComponent = () => {
       
       <View style={styles.addressContent}>
         <View style={styles.addressNameRow}>
-          <Text style={styles.addressName}>{item.name}</Text>
-          <Text style={styles.addressPhone}>{item.phoneNumber}</Text>
+          <Text style={styles.addressName}>{item.contact_name}</Text>
+          <Text style={styles.addressPhone}>{item.mobile_number}</Text>
         </View>
         
         <Text style={styles.addressLine}>
-          {item.address}, {item.city}, {item.state} {item.zipCode}
+          {item.address_line_1}
+          {item.address_line_2 ? `, ${item.address_line_2}` : ''},
+          {item.location ? ` ${item.location},` : ''} {item.pin_code}
         </Text>
-        <Text style={styles.addressLine}>{item.country}</Text>
       </View>
       
       <View style={styles.addressActions}>
@@ -270,7 +235,8 @@ const AddressManagementComponent = () => {
         
         <TouchableOpacity 
           style={styles.deleteButton} 
-          onPress={() => deleteAddress(item.id)}
+          onPress={() => handleDeleteAddress(item.id)}
+          disabled={deletingId === item.id}
         >
           <Ionicons name="trash-outline" size={16} color={colors.error} />
           <Text style={styles.deleteButtonText}>Delete</Text>
@@ -281,97 +247,80 @@ const AddressManagementComponent = () => {
 
   return (
     <View style={styles.container}>
+      <SuccessModal
+        visible={successVisible}
+        onClose={() => setSuccessVisible(false)}
+        message={successMessage}
+      />
+      <ErrorModal
+        visible={errorVisible}
+        onClose={() => {
+          setErrorVisible(false);
+          dispatch(resetError());
+        }}
+        message={errorMessage}
+      />
+      
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Add New Address</Text>
+        <Text style={styles.sectionTitle}>
+          {editingAddressId ? 'Edit Address' : 'Add New Address'}
+        </Text>
       </View>
       
-      {/* Personal Details Form */}
       <View style={styles.form}>
-        {/* <View style={styles.row}> */}
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 10 }]}>
-            <Text style={styles.label}>Full Name</Text>
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={setName}
-              placeholder="Enter your full name"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-          
-          <View style={[styles.inputContainer, { flex: 1 }]}>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              placeholder="Enter your phone number"
-              keyboardType="phone-pad"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-        {/* </View> */}
-
-        {/* Address Form */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.label}>Street Address</Text>
-          <TextInput
-            style={styles.input}
-            value={address}
-            onChangeText={setAddress}
-            placeholder="Enter your street address"
+        <View style={styles.inputRow}>
+          <InputField
+            label="Full Name"
+            value={inputs.contact_name}
+            onChangeText={text => setInputs(prev => ({ ...prev, contact_name: text }))}
+            placeholder="Enter your full name"
             placeholderTextColor={colors.textSecondary}
+            containerStyle={{ flex: 1, marginRight: 10 }}
+          />
+          
+          <InputField
+            label="Mobile Number"
+            value={inputs.mobile_number}
+            onChangeText={text => setInputs(prev => ({ ...prev, mobile_number: text }))}
+            placeholder="Enter your mobile number"
+            keyboardType="phone-pad"
+            placeholderTextColor={colors.textSecondary}
+            containerStyle={{ flex: 1 }}
           />
         </View>
 
-        <View style={styles.row}>
-          <View style={[styles.inputContainer, { flex: 2, marginRight: 10 }]}>
-            <Text style={styles.label}>City</Text>
-            <TextInput
-              style={styles.input}
-              value={city}
-              onChangeText={setCity}
-              placeholder="City"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-          
-          <View style={[styles.inputContainer, { flex: 1 }]}>
-            <Text style={styles.label}>State</Text>
-            <TextInput
-              style={styles.input}
-              value={state}
-              onChangeText={setState}
-              placeholder="State"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-        </View>
+        <InputField
+          label="Address Line 1"
+          value={inputs.address_line_1}
+          onChangeText={text => setInputs(prev => ({ ...prev, address_line_1: text }))}
+          placeholder="Enter your address line 1"
+          placeholderTextColor={colors.textSecondary}
+        />
 
-        <View style={styles.row}>
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 10 }]}>
-            <Text style={styles.label}>Zip Code</Text>
-            <TextInput
-              style={styles.input}
-              value={zipCode}
-              onChangeText={setZipCode}
-              placeholder="Zip Code"
-              keyboardType="numeric"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-          
-          <View style={[styles.inputContainer, { flex: 2 }]}>
-            <Text style={styles.label}>Country</Text>
-            <TextInput
-              style={styles.input}
-              value={country}
-              onChangeText={setCountry}
-              placeholder="Country"
-              placeholderTextColor={colors.textSecondary}
-            />
-          </View>
-        </View>
+        <InputField
+          label="Address Line 2"
+          value={inputs.address_line_2}
+          onChangeText={text => setInputs(prev => ({ ...prev, address_line_2: text }))}
+          placeholder="Enter your address line 2"
+          placeholderTextColor={colors.textSecondary}
+        />
+
+        <InputField
+          label="Location"
+          value={inputs.location}
+          onChangeText={text => setInputs(prev => ({ ...prev, location: text }))}
+          placeholder="Enter your location (street)"
+          placeholderTextColor={colors.textSecondary}
+        />
+
+        <InputField
+          label="Pin Code"
+          value={inputs.pin_code}
+          onChangeText={text => setInputs(prev => ({ ...prev, pin_code: text }))}
+          placeholder="Pin Code"
+          keyboardType="numeric"
+          placeholderTextColor={colors.textSecondary}
+        />
 
         <TouchableOpacity 
           style={styles.locationButton} 
@@ -390,23 +339,34 @@ const AddressManagementComponent = () => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveButton} onPress={saveAddress}>
-          <Ionicons name="save-outline" size={20} color={colors.textOnPrimary} />
-          <Text style={styles.saveButtonText}>Save Address</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, loading && styles.saveButtonDisabled]} 
+          onPress={saveAddress}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color={colors.textOnPrimary} />
+          ) : (
+            <>
+              <Ionicons name="save-outline" size={20} color={colors.textOnPrimary} />
+              <Text style={styles.saveButtonText}>
+                {editingAddressId ? 'Update Address' : 'Save Address'}
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       </View>
 
-      {/* Saved Addresses Section */}
       <View style={styles.savedAddressesSection}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Saved Addresses</Text>
         </View>
         
-        {savedAddresses.length > 0 ? (
+        {addresses.length > 0 ? (
           <FlatList
-		  scrollEnabled={false}
-            data={savedAddresses}
-            renderItem={renderSavedAddress}
+            scrollEnabled={false}
+            data={addresses}
+            renderItem={renderAddress}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
             style={styles.addressList}
@@ -440,6 +400,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
+  inputRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
   inputContainer: {
     marginBottom: 16,
   },
@@ -456,10 +420,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     backgroundColor: colors.white,
-  },
-  row: {
-    flexDirection: 'row',
-    marginBottom: 16,
   },
   locationButton: {
     backgroundColor: colors.backgroundDark,
@@ -483,6 +443,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    backgroundColor: colors.primaryTransparent,
   },
   saveButtonText: {
     color: colors.textOnPrimary,

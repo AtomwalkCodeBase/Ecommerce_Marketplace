@@ -75,6 +75,11 @@ const ProductDetail = () => {
     }
   };
 
+  const handleBuyNow = () => {
+    // navigation.navigate('Checkout');
+    router.push('/DeliveryAddressScreen')
+  };
+
 
   if (loading) {
     return (
@@ -209,6 +214,7 @@ const ProductDetail = () => {
             { opacity: product.available_qty <= 0 ? 0.6 : 1 },
           ]}
           disabled={product.available_qty <= 0}
+          onPress={handleBuyNow}
         >
           <Text style={buttonStyles.primaryText}>Buy Now</Text>
         </TouchableOpacity>

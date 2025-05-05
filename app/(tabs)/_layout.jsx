@@ -105,9 +105,6 @@ const _layout = () => {
           title: "Cart",
           headerShown: false,
           tabBarBadge: cartCount > 0 ? cartCount : null,
-          // tabBarIcon: ({ color }) => (
-          //   <Feather name="shopping-cart" size={24} color={color} />
-          // ),
           tabBarIcon: ({ focused }) => (
             <TabIcon
               focused={focused}
@@ -124,10 +121,6 @@ const _layout = () => {
         options={{
           title: "Profile",
           headerShown: false,
-        //   tabBarIcon: ({ color }) => (
-        //     <Ionicons name="people" size={24} color={color} />
-        //   ),
-        // }}
           tabBarIcon: ({ focused }) => (
             <TabIcon
               focused={focused}
@@ -146,23 +139,23 @@ const _layout = () => {
 export default _layout;
 
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: '#0f0D23',
-    borderRadius: 30,
-    marginHorizontal: 15,
-    marginBottom: 20,
-    height: 52,
-    position: 'absolute',
-    overflow: 'hidden',
-    borderWidth: 0.5,
-    borderColor: '#0f0D23',
-  },
-  tabBarItem: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  // tabBar: {
+  //   backgroundColor: '#0f0D23',
+  //   borderRadius: 30,
+  //   marginHorizontal: 15,
+  //   marginBottom: 20,
+  //   height: 52,
+  //   position: 'absolute',
+  //   overflow: 'hidden',
+  //   borderWidth: 0.5,
+  //   borderColor: '#0f0D23',
+  // },
+  // tabBarItem: {
+  //   width: '100%',
+  //   height: '100%',
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  // },
   focusedContainer: {
     // flexDirection: 'row',
     gap: 4,

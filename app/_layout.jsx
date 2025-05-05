@@ -18,6 +18,9 @@ export default function RootLayout() {
       <Stack.Screen name="LocationScreen/index"/>
       <Stack.Screen name="SearchScreen/index"/>
       <Stack.Screen name="ProductListScreen/index"/>
+      <Stack.Screen name="DeliveryAddressScreen/index" />
+      <Stack.Screen name="OrderSummaryScreen/index" />
+      <Stack.Screen name="PaymentMethodScreen/index"/>
 
     </Stack>
     </AppProvider>

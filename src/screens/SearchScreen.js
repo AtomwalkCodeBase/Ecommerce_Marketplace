@@ -8,19 +8,29 @@ import {
   SafeAreaView, 
   Platform,
   StatusBar,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
+  ScrollView
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../Styles/appStyle';
 import Header from '../components/Header';
+import { useSelector } from 'react-redux';
+import { usePathname, useRouter } from 'expo-router';
 
 const STORAGE_KEY = '@recent_searches';
 
 const SearchScreen = () => {
+  const pathname = usePathname();
+  console.log("kjdsbc", pathname)
   const [searchText, setSearchText] = useState('');
   const [recentSearches, setRecentSearches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const { categories, categoryLoading, categoryError } = useSelector((state) => state.category);
+  const router = useRouter();
 
   // Load recent searches from AsyncStorage on component mount
   useEffect(() => {
@@ -29,13 +39,7 @@ const SearchScreen = () => {
         const storedSearches = await AsyncStorage.getItem(STORAGE_KEY);
         if (storedSearches !== null) {
           setRecentSearches(JSON.parse(storedSearches));
-        } 
-		// else {
-        //   // Default initial searches for first-time users
-        //   const initialSearches = ['Oil Painting', 'Water...', 'Table'];
-        //   setRecentSearches(initialSearches);
-        //   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(initialSearches));
-        // }
+        }
       } catch (error) {
         console.error('Error loading recent searches:', error);
       } finally {
@@ -60,16 +64,29 @@ const SearchScreen = () => {
     
     // Add to recent searches if not already there
     if (!recentSearches.includes(searchText)) {
-      const updatedSearches = [searchText, ...recentSearches].slice(0, 10); // Limit to 10 searches
+      const updatedSearches = [searchText, ...recentSearches].slice(0, 10);
       setRecentSearches(updatedSearches);
       saveRecentSearches(updatedSearches);
     }
     
+    // Navigate to ProductListScreen with the search query
+    router.push({
+      pathname: '/ProductListScreen',
+      params: { searchQuery: searchText, title: `Search Results for "${searchText}"` },
+    });
+
     // Reset search text
     setSearchText('');
-    
-    // You would typically navigate to results here
-    console.log(`Searching for: ${searchText}`);
+  };
+
+  const handleCategorySelect = (category) => {
+    setShowDropdown(false);
+    if (category) {
+      router.push({
+        pathname: '/ProductListScreen',
+        params: { categoryName: category.name, title: category.name },
+      });
+    }
   };
 
   const removeSearch = (index) => {
@@ -85,67 +102,103 @@ const SearchScreen = () => {
   };
 
   return (
-	<>
-		<Header title="Search" isHomePage={false} />
-    <SafeAreaView style={styles.container}>
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Feather name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search for clothes..."
-            placeholderTextColor={colors.textSecondary}
-            value={searchText}
-            onChangeText={setSearchText}
-            onSubmitEditing={handleSearch}
-          />
-          {/* <Feather name="mic" size={20} color={colors.textSecondary} style={styles.micIcon} /> */}
-        </View>
-        
-        <TouchableOpacity style={styles.filterButton}>
-          <Feather name="sliders" size={20} color={colors.primary} />
-        </TouchableOpacity>
-      </View>
-      
-      {isLoading ? (
-        <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
-      ) : (
-        <>
-          {recentSearches.length > 0 && (
-            <View style={styles.recentSearchesHeader}>
-              <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
-              <TouchableOpacity onPress={clearAllSearches} hitSlop={{top: 10, right: 10, bottom: 10, left: 10}}>
-                <Feather name="trash-2" size={20} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
-          )}
-          
-          <View style={styles.recentSearchesList}>
-            {recentSearches.map((search, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={styles.searchTag}
-                onPress={() => {
-                  setSearchText(search);
-                  // Optionally, immediately trigger search with this term
-                  // handleSearch();
-                }}
-              >
-                <Text style={styles.searchTagText}>{search}</Text>
-                <TouchableOpacity 
-                  onPress={() => removeSearch(index)} 
-                  style={styles.removeButton}
-                  hitSlop={{top: 10, right: 10, bottom: 10, left: 10}}
-                >
-                  <Feather name="x" size={16} color={colors.primary} />
-                </TouchableOpacity>
-              </TouchableOpacity>
-            ))}
+    <>
+      <Header title="Search" isHomePage={false} />
+      <SafeAreaView style={styles.container}>
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <Feather name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search for clothes..."
+              placeholderTextColor={colors.textSecondary}
+              value={searchText}
+              onChangeText={setSearchText}
+              onSubmitEditing={handleSearch}
+            />
+            <Feather name="mic" size={20} color={colors.textSecondary} style={styles.micIcon} />
           </View>
-        </>
-      )}
-    </SafeAreaView>
-	</>
+          <TouchableOpacity 
+            style={styles.filterButton} 
+            onPress={() => setShowDropdown(true)}
+          >
+            <Feather name="sliders" size={20} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        <Modal
+          visible={showDropdown}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowDropdown(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setShowDropdown(false)}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback onPress={() => {}}>
+                <View style={styles.bottomSheet}>
+                  <View style={styles.sheetHandle} />
+                  <Text style={styles.sheetTitle}>Select Category</Text>
+                  <ScrollView>
+                    <TouchableOpacity 
+                      style={styles.categoryItem} 
+                      onPress={() => handleCategorySelect(null)}
+                    >
+                      <Text style={styles.categoryText}>All Categories</Text>
+                    </TouchableOpacity>
+                    {categories.map((cat, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.categoryItem}
+                        onPress={() => handleCategorySelect(cat)}
+                      >
+                        <Text style={styles.categoryText}>{cat.name}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        
+        {isLoading ? (
+          <ActivityIndicator size="small" color={colors.primary} style={styles.loader} />
+        ) : (
+          <>
+            {recentSearches.length > 0 && (
+              <View style={styles.recentSearchesHeader}>
+                <Text style={styles.recentSearchesTitle}>Recent Searches</Text>
+                <TouchableOpacity onPress={clearAllSearches} hitSlop={{top: 10, right: 10, bottom: 10, left: 10}}>
+                  <Feather name="trash-2" size={20} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            <View style={styles.recentSearchesList}>
+              {recentSearches.map((search, index) => (
+                <TouchableOpacity 
+                  key={index} 
+                  style={styles.searchTag}
+                  onPress={() => {
+                    setSearchText(search);
+                    handleSearch();
+                  }}
+                >
+                  <Text style={styles.searchTagText}>{search}</Text>
+                  <TouchableOpacity 
+                    onPress={() => removeSearch(index)} 
+                    style={styles.removeButton}
+                    hitSlop={{top: 10, right: 10, bottom: 10, left: 10}}
+                  >
+                    <Feather name="x" size={16} color={colors.primary} />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
+      </SafeAreaView>
+    </>
   );
 };
 
@@ -153,7 +206,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    // paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     paddingHorizontal: 18,
   },
   loader: {
@@ -230,6 +282,41 @@ const styles = StyleSheet.create({
   removeButton: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  bottomSheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  sheetHandle: {
+    width: 40,
+    height: 5,
+    backgroundColor: '#ccc',
+    borderRadius: 3,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  categoryItem: {
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  categoryText: {
+    fontSize: 16,
+    color: colors.textPrimary,
   },
 });
 
