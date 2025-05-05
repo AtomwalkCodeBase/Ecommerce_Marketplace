@@ -26,6 +26,17 @@ export const authAxiosPost = async (url, data) => {
   }).post(url, data)
 };
 
+export const authAxiosDelete = async (url, id) => {
+  let token = await AsyncStorage.getItem('userToken');
+  // console.log('authaxios', token, url)
+  return axios.create({
+      baseURL: endpoint,
+      headers: {
+          Authorization: `Token ${token}`
+      }
+  }).delete(url, id)
+};
+
 
 
 export const authAxiosFilePost = async (url, data) => {

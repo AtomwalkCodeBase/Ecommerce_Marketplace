@@ -4,7 +4,7 @@ import { Ionicons, MaterialIcons, FontAwesome, Entypo, AntDesign } from '@expo/v
 import { AppContext } from '../../context/AppContext';
 import { getProfileInfo } from '../services/authServices';
 import HeaderComponent from '../components/HeaderComponent'; 
-import { useNavigation, useRouter } from 'expo-router';
+import { useNavigation, usePathname, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutRight } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
 const ProfileScreen = () => {
   const { logout } = useContext(AppContext);
   const [profile, setProfile] = useState({});
+  const pathname = usePathname();
   // const [isManager, setIsManager] = useState(false);
   const [userPin, setUserPin] = useState(null);
   
@@ -227,7 +228,7 @@ const ProfileScreen = () => {
     <SafeAreaView style={styles.container}>
     
     {/* Header */}
-    <Header isHomePage={true} title={"Profile"} />
+    <Header isHomePage={true} title={"Profile"} currentRoute={pathname} />
 
     {/* Profile Info */}
     <View style={styles.profileInfoContainer}>

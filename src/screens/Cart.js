@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { ScrollView } from "react-native";
+import { useRouter } from "expo-router";
 
 // Import color theme
 const colors = {
@@ -43,6 +44,7 @@ const colors = {
 };
 
 const Cart = () => {
+  const router = useRouter ()
   const cartItems = useSelector((state) => state.cart.cartItems);
   const dispatch = useDispatch();
 
@@ -56,8 +58,13 @@ const Cart = () => {
   const total = subTotal + vat + shippingFee;
 
   const handleCheckout = () => {
-    navigation.navigate('Checkout');
+    // navigation.navigate('Checkout');
+    router.push('/DeliveryAddressScreen')
   };
+
+  const handelContinueShop = () => {
+   router.push('/home')
+  } 
 
   const handleClearCart = () => {
     dispatch(clearCart());
@@ -130,7 +137,7 @@ const Cart = () => {
           </Text>
           <TouchableOpacity 
             style={styles.continueShoppingButton}
-            // onPress={onBackPress}
+            onPress={handelContinueShop}
           >
             <Text style={styles.continueShoppingButtonText}>Continue Shopping</Text>
           </TouchableOpacity>

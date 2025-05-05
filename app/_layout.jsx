@@ -18,6 +18,9 @@ export default function RootLayout() {
       <Stack.Screen name="LocationScreen/index" options={{headerShown:false}}/>
       <Stack.Screen name="SearchScreen/index" options={{headerShown:false}}/>
       <Stack.Screen name="ProductListScreen/index" options={{headerShown:false}}/>
+      <Stack.Screen name="DeliveryAddressScreen/index" options={{headerShown:false}}/>
+      <Stack.Screen name="OrderSummaryScreen/index" options={{headerShown:false}}/>
+      <Stack.Screen name="PaymentMethodScreen/index" options={{headerShown:false}}/>
 
     </Stack>
     </AppProvider>

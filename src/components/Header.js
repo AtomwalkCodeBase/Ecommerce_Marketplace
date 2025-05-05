@@ -103,11 +103,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 20,
+    fontWeight: '600'
   },
   highlightedItem: {
     backgroundColor: colors.primaryTransparent,
     borderRadius: 8,
-    paddingHorizontal: 10,
   },
   menuText: {
     marginLeft: 15,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   highlightedText: {
     color: colors.primary,
-    fontWeight: 'semibold',
+    fontWeight: '600',
   },
   logoutButton: {
     flexDirection: 'row',
@@ -174,7 +174,7 @@ const Header = ({ isHomePage = true, onBackPress, title, currentRoute }) => {
   
   const mainMenuItems = [
     { name: 'Homepage', icon: 'home', route: '/home', highlight: currentRoute === '/home' },
-    { name: 'Discover', icon: 'search', route: '/discover', highlight: currentRoute === '/discover' },
+    { name: 'Discover', icon: 'search', route: '/SearchScreen', highlight: currentRoute === '/SearchScreen' },
     { name: 'My Order', icon: 'shopping-bag', route: '/orders', highlight: currentRoute === '/orders'},
     { name: 'My profile', icon: 'user', route: '/profile', highlight: currentRoute === '/profile' },
   ];

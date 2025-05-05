@@ -5,7 +5,6 @@ import { usePathname } from 'expo-router';
 
 const Orders = () => {
 	 const pathname = usePathname(); // Get the current route
-	  console.log(`Current route: ${pathname}`);
   return (
 	<>
 	<Header isHomePage={true} title={"Orders"} currentRoute={pathname}  />
