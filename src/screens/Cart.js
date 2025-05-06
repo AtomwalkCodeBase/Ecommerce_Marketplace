@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -8,45 +8,25 @@ import {
   removeFromCart,
   clearCart,
 } from "../redux/slice/CartSlice";
+import { fetchAddresses } from "../redux/slice/addressSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-
-// Import color theme
-const colors = {
-  // Brand & Primary
-  primary: '#FF5500',
-  primaryTransparent: '#ff550033',
-  
-  // Text
-  textPrimary: '#000000',
-  textSecondary: '#777E90',
-  textOnPrimary: '#FFFFFF',
-  
-  // Backgrounds
-  background: '#FFFFFF',
-  backgroundDark: '#353945',
-  backgroundDarker: '#1E1E1E',
-  
-  // Borders & Divider
-  border: '#9B9B9A',
-  
-  // Status
-  error: '#ED1010',
-  success: 'green',
-  warning: '#FFC300',
-  muted: '#eee',
-  
-  // Utility
-  black: '#000000',
-  white: '#FFFFFF',
-};
+import ConfirmationModal from "../components/ConfirmationModal";
+import { colors } from "../Styles/appStyle";
 
 const Cart = () => {
-  const router = useRouter ()
+  const router = useRouter();
+  const [isModalVisible, setModalVisible] = useState(false);
   const cartItems = useSelector((state) => state.cart.cartItems);
+  const { addresses } = useSelector((state) => state.address);
   const dispatch = useDispatch();
+
+  // Fetch addresses on mount
+  useEffect(() => {
+    dispatch(fetchAddresses());
+  }, [dispatch]);
 
   // Calculate cart totals
   const subTotal = cartItems.reduce(
@@ -58,16 +38,25 @@ const Cart = () => {
   const total = subTotal + vat + shippingFee;
 
   const handleCheckout = () => {
-    // navigation.navigate('Checkout');
-    router.push('/DeliveryAddressScreen')
+    const defaultAddress = addresses.find((addr) => addr.isDefault) || addresses[0];
+    if (defaultAddress) {
+      router.push('PaymentMethodScreen');
+    } else {
+      router.push('DeliveryAddressScreen');
+    }
   };
 
   const handelContinueShop = () => {
-   router.push('/home')
-  } 
+    router.push('/home');
+  };
 
   const handleClearCart = () => {
+    setModalVisible(true);
+  };
+
+  const confirmClearCart = () => {
     dispatch(clearCart());
+    setModalVisible(false);
   };
 
   const renderCartItem = (item) => (
@@ -95,9 +84,11 @@ const Cart = () => {
             <Feather name="trash-2" size={20} color={colors.error} />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.itemRightDown}>
-          <Text style={styles.itemPrice}>$ {item.selling_price.toLocaleString()}</Text>
+          <Text style={styles.itemPrice}>
+          ₹ {item.selling_price.toLocaleString()}
+          </Text>
           <View style={styles.quantityContainer}>
             <TouchableOpacity
               style={styles.quantityButton}
@@ -124,7 +115,7 @@ const Cart = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header isHomePage={false} title="Cart"  />
+      <Header isHomePage={false} title="Cart" />
 
       {cartItems.length === 0 ? (
         <View style={styles.emptyCartContainer}>
@@ -135,11 +126,13 @@ const Cart = () => {
           <Text style={styles.emptyCartSubtitle}>
             When you add products, they'll appear here.
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.continueShoppingButton}
             onPress={handelContinueShop}
           >
-            <Text style={styles.continueShoppingButtonText}>Continue Shopping</Text>
+            <Text style={styles.continueShoppingButtonText}>
+              Continue Shopping
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -153,50 +146,65 @@ const Cart = () => {
             {/* Summary */}
             <View style={styles.summaryContainer}>
               <Text style={styles.summaryTitle}>Order Summary</Text>
-              
+
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Sub-total</Text>
-                <Text style={styles.summaryValue}>$ {subTotal.toLocaleString()}</Text>
+                <Text style={styles.summaryValue}>
+                  ₹ {subTotal.toLocaleString()}
+                </Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>VAT (%)</Text>
-                <Text style={styles.summaryValue}>$ {vat.toFixed(2)}</Text>
+                <Text style={styles.summaryValue}>₹ {vat.toFixed(2)}</Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Shipping fee</Text>
-                <Text style={styles.summaryValue}>$ {shippingFee}</Text>
+                <Text style={styles.summaryValue}>₹ {shippingFee}</Text>
               </View>
 
               <View style={[styles.summaryRow, styles.totalRow]}>
                 <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>$ {total.toLocaleString()}</Text>
+                <Text style={styles.totalValue}>
+                  ₹ {total.toLocaleString()}
+                </Text>
               </View>
             </View>
-            
+
             {/* Add a little padding at the bottom to avoid being covered by the checkout button */}
             <View style={{ height: 100 }} />
           </ScrollView>
 
           {/* Action Buttons */}
           <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity 
-              style={styles.clearButton} 
+            <TouchableOpacity
+              style={styles.clearButton}
               onPress={handleClearCart}
             >
               <Feather name="trash" size={18} color={colors.textOnPrimary} />
               <Text style={styles.clearButtonText}>Clear</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.checkoutButton} 
+
+            <TouchableOpacity
+              style={styles.checkoutButton}
               onPress={handleCheckout}
             >
               <Text style={styles.checkoutButtonText}>Checkout</Text>
               <Feather name="arrow-right" size={18} color={colors.textOnPrimary} />
             </TouchableOpacity>
           </View>
+          <ConfirmationModal
+            visible={isModalVisible}
+            onConfirm={confirmClearCart}
+            onCancel={() => setModalVisible(false)}
+            message="Are you sure you want to clear your cart?"
+            messageSize={16}
+            confirmButtonColor={colors.error}
+            cancelButtonColor={colors.textSecondary}
+            confirmButtonText="Clear"
+            cancelButtonText="Cancel"
+          />
         </>
       )}
     </SafeAreaView>
@@ -208,9 +216,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  // cartItemsContainer: {
-  //   paddingTop: 12,
-  // },
   cartItemContainer: {
     flexDirection: "row",
     borderRadius: 12,
@@ -229,12 +234,12 @@ const styles = StyleSheet.create({
   itemLeft: {
     marginRight: 16,
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   itemImage: {
     width: 100,
     height: 130,
-    resizeMode: 'cover',
+    resizeMode: "cover",
     borderRadius: 8,
     backgroundColor: colors.muted,
   },

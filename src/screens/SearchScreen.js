@@ -18,13 +18,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../Styles/appStyle';
 import Header from '../components/Header';
 import { useSelector } from 'react-redux';
-import { usePathname, useRouter } from 'expo-router';
+import {  useRouter } from 'expo-router';
 
 const STORAGE_KEY = '@recent_searches';
 
 const SearchScreen = () => {
-  const pathname = usePathname();
-  console.log("kjdsbc", pathname)
   const [searchText, setSearchText] = useState('');
   const [recentSearches, setRecentSearches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

@@ -7,7 +7,7 @@ import {
   ScrollView,
   StatusBar
 } from 'react-native';
-import AddressManagementSection from '../components/AddressManagementSection';
+import AddressManagementSection from '../screens/AddressManagementSection';
 import { colors } from '../Styles/appStyle';
 import Header from '../components/Header';
 
@@ -16,15 +16,11 @@ export default function LocationScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-      <Header isHomePage={false} title={"AddressBook"} />
+      <Header isHomePage={false} title={"Your Addresses"} />
       
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Pass scrollEnabled={false} to any child FlatList */}
-        <AddressManagementSection scrollEnabled={false} />
-      </ScrollView>
+      <View style={styles.content}>
+        <AddressManagementSection />
+      </View>
     </SafeAreaView>
   );
 }
@@ -33,6 +29,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  content: {
+    flex: 1,
   },
   header: {
     paddingHorizontal: 16,

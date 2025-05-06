@@ -1,105 +1,141 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import Button from '../components/Button';
 import { colors } from '../Styles/appStyle';
-import AddressCard from '../components/AddressCard ';
-import SectionTitle from '../components/SectionTitle';
-import { useRouter } from 'expo-router';
+import AddressCard from '../components/AddressCard';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAddresses } from '../redux/slice/addressSlice';
+import { fetchAddresses, setSelectedAddress } from '../redux/slice/addressSlice';
+import Header from '../components/Header';
 
 const DeliveryAddressScreen = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-
-  const { addresses, loading, error } = useSelector((state) => state.address);
-  const [selectedAddress, setSelectedAddress] = useState(null);
+  const { returnTo, selectedAddress: paramSelectedAddress } = useLocalSearchParams();
+  const { addresses, selectedAddress, loading, error } = useSelector((state) => state.address);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchAddresses());
   }, [dispatch]);
 
-  // Set default selected address after addresses are loaded
   useEffect(() => {
-    if (addresses.length > 0 && !selectedAddress) {
-      const defaultAddr = addresses.find((addr) => addr.isDefault) || addresses[0];
-      setSelectedAddress(defaultAddr.id);
-    }
-  }, [addresses]);
+    if (addresses.length === 0) return;
 
-  const handleContinue = () => {
-    if (selectedAddress) {
-      router.push({
-        pathname: 'PaymentMethodScreen',
-        params: { selectedAddress },
-      });
+    if (paramSelectedAddress && !selectedAddress) {
+      try {
+        const parsedAddress = JSON.parse(paramSelectedAddress);
+        const validAddress = addresses.find(addr => addr.id === parsedAddress.id);
+        if (validAddress) {
+          dispatch(setSelectedAddress(validAddress));
+          setSelectedAddressId(validAddress.id);
+          return;
+        }
+      } catch (e) {
+        console.warn('Failed to parse selectedAddress:', e);
+      }
     }
-  };
 
-  const handleEditAddress = (addressId) => {
-    console.log('Edit address', addressId);
+    if (selectedAddress && addresses.some(addr => addr.id === selectedAddress.id)) {
+      setSelectedAddressId(selectedAddress.id);
+    } else {
+      const defaultAddr = addresses.find((addr) => addr.default) || addresses[0];
+      setSelectedAddressId(defaultAddr.id);
+      dispatch(setSelectedAddress(defaultAddr));
+    }
+  }, [addresses, selectedAddress, paramSelectedAddress, dispatch]);
+
+  const handleSelectAddress = (address) => {
+    setSelectedAddressId(address.id);
+    dispatch(setSelectedAddress(address));
+    const targetScreen = returnTo || 'PaymentMethodScreen';
+    router.replace({
+      pathname: targetScreen,
+      params: { selectedAddress: JSON.stringify(address) },
+    });
   };
 
   const handleAddAddress = () => {
-    console.log('Add new address');
+    router.push({
+      pathname: '/AddEditAddress',
+      params: { returnTo },
+    });
   };
 
-  if (loading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
+  const renderActionButtons = (address) => (
+    <View style={styles.actionContainer}>
+      {address.default && <Text style={styles.defaultText}>Default</Text>}
+      <TouchableOpacity
+        style={styles.actionButton}
+        onPress={() => router.push({ pathname: '/AddEditAddress', params: { address: JSON.stringify(address), returnTo } })}
+      >
+        <Ionicons name="pencil" size={16} color={colors.primary} />
+        <Text style={styles.actionButtonText}>Edit</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-  if (error) {
-    return (
-      <View style={styles.centered}>
-        <Text style={{ color: 'red' }}>Failed to load addresses.</Text>
-      </View>
-    );
-  }
+  const renderAddress = ({ item }) => (
+    <AddressCard
+      address={item}
+      isSelected={selectedAddressId === item.id}
+      onSelect={() => handleSelectAddress(item)}
+      showRadio={true}
+      actionButtons={renderActionButtons(item)}
+    />
+  );
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <SectionTitle title="Delivery Address" />
+    <SafeAreaView style={styles.container}>
+      <Header isHomePage={false} title="Delivery Address" />
 
-        {addresses.map((address) => (
-          <View key={address.id}>
-            <AddressCard 
-              address={address}
-              isSelected={selectedAddress === address.id}
-              onSelect={() => setSelectedAddress(address.id)}
-            />
-            <View style={styles.actionButtons}>
-              <TouchableOpacity 
-                style={styles.actionButton}
-                onPress={() => handleEditAddress(address.id)}
-              >
-                <Ionicons name="create-outline" size={20} color={colors.primary} />
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
+      {/* Loading or Error */}
+      {(loading || error) && (
+        <View style={styles.statusContainer}>
+          {loading && <ActivityIndicator size="large" color={colors.primary} />}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </View>
+      )}
 
-        <Button 
-          title="Add a Delivery Address"
-          variant="outline"
-          onPress={handleAddAddress}
+      {/* Add Button (always visible) */}
+      <View style={styles.addButtonContainer}>
+        <TouchableOpacity
           style={styles.addButton}
-        />
-      </ScrollView>
-
-      <View style={styles.footer}>
-        <Button 
-          title="Deliver to this Address"
-          onPress={handleContinue}
-        />
+          onPress={handleAddAddress}
+        >
+          <Ionicons name="add" size={20} color={colors.textOnPrimary} />
+          <Text style={styles.addButtonText}>Add New Address</Text>
+        </TouchableOpacity>
       </View>
-    </View>
+
+      {/* Address List */}
+      {!loading && !error && addresses.length > 0 && (
+        <FlatList
+          data={addresses}
+          renderItem={renderAddress}
+          keyExtractor={(item) => item.id}
+          style={styles.addressList}
+          contentContainerStyle={{ paddingBottom: 32 }}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
+
+      {/* No Addresses */}
+      {!loading && !error && addresses.length === 0 && (
+        <View style={styles.noAddressContainer}>
+          <Ionicons name="location-outline" size={48} color={colors.textSecondary} />
+          <Text style={styles.noAddressText}>No Address available....</Text>
+        </View>
+      )}
+    </SafeAreaView>
   );
 };
 
@@ -108,39 +144,74 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  scrollView: {
-    flex: 1,
-    padding: 16,
+  addButtonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.background,
   },
-  actionButtons: {
+  addButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginTop: -4,
-    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButtonText: {
+    color: colors.textOnPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  addressList: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  actionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
   actionButtonText: {
     color: colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
     marginLeft: 4,
   },
-  addButton: {
-    marginTop: 8,
+  defaultText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '500',
+    marginRight: 12,
   },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.muted,
-    backgroundColor: colors.white,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
+  statusContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     alignItems: 'center',
   },
+  errorText: {
+    fontSize: 16,
+    color: colors.error,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  noAddressContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noAddressText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginTop: 12,
+  }
 });
 
 export default DeliveryAddressScreen;

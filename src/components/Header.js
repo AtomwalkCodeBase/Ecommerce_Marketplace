@@ -17,6 +17,8 @@ const HeaderContainer = styled.View`
   shadowRadius: 4;
   elevation: 2;
   shadowColor: '#000';
+  border-bottom-width: 1px;
+  border-bottom-color: ${colors.muted};
 `;
 
 const Title = styled.Text`
@@ -112,6 +114,7 @@ const styles = StyleSheet.create({
   menuText: {
     marginLeft: 15,
     fontSize: 16,
+    fontWeight: '600',
     color: colors.textSecondary,
   },
   highlightedText: {
@@ -130,6 +133,7 @@ const styles = StyleSheet.create({
   logoutText: {
     marginLeft: 15,
     fontSize: 16,
+    fontWeight: '600',
     color: colors.error,
   },
   drawerContentContainer: {

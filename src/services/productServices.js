@@ -1,6 +1,6 @@
 import { addEmpLeave, getEmpLeavedata, addClaim, getEmpClaimdata, getExpenseItemList, getProjectList, getEmpAttendanceData, 
   getEmpHolidayData, empCheckData, processClaim, getClaimApproverList, getProductCategoryListURL, productListURL, userLoginURL,
-  addressListURL, addressCreateURL, addressDeleteURL, addressUpdateURL, productDetailURL,
+  addressListURL, addressCreateURL, addressDeleteURL, addressUpdateURL, productDetailURL,orderCreateURL,orderListURL,getOrderListURL,
   setDefaultAddressURL} from "./ConstantServices";
 import { authAxios, authAxiosDelete, authAxiosFilePost, authAxiosPost } from "./HttpMethod";
 
@@ -146,4 +146,14 @@ export function deleteAddress(id) {
 export function setDefaultAddress(address_data) {
   console.log(address_data.id, address_data)
   return authAxiosPost(setDefaultAddressURL, {'address_data': address_data});
+}
+
+export function placeOrder(order_data) {
+  console.log('Order Create', order_data)
+  return authAxiosPost(orderCreateURL, {'order_data': order_data});
+}
+
+export function getOrderList() {
+  console.log('getOrderList')
+  return authAxios(orderListURL);
 }

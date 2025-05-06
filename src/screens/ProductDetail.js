@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addToCart } from '../redux/slice/CartSlice';
 import { colors } from '../Styles/appStyle';
 import { buttonStyles } from '../Styles/ButtonStyles';
+import { SuccessModal, ErrorModal } from '../components/Modal';
 
 const { width } = Dimensions.get('window');
 
@@ -31,16 +32,17 @@ const ProductDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
 
   const cartItems = useSelector((state) => state.cart.cartItems);
-
 
   const isInCart = cartItems.some((item) => item.id === parseInt(productId));
 
   const fetchProductDetails = async () => {
     try {
-        const res = await getProductDetails(productId);
-        setProduct(res.data);
+      const res = await getProductDetails(productId);
+      setProduct(res.data);
     } catch (error) {
       setError('Failed to load product details');
       console.log('Error fetching product details:', error);
@@ -71,15 +73,19 @@ const ProductDetail = () => {
     if (isInCart) {
       router.push('/cart');
     } else {
-      dispatch(addToCart(product));
+      try {
+        dispatch(addToCart({ ...product, v_keys: '' }));
+        setSuccessModalVisible(true);
+      } catch (error) {
+        console.log('Failed to add to cart:', error);
+        setErrorModalVisible(true);
+      }
     }
   };
 
   const handleBuyNow = () => {
-    // navigation.navigate('Checkout');
-    router.push('/DeliveryAddressScreen')
+    router.push('/DeliveryAddressScreen');
   };
-
 
   if (loading) {
     return (
@@ -202,7 +208,7 @@ const ProductDetail = () => {
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
-      <TouchableOpacity style={buttonStyles.secondary} onPress={handleAddToCart}>
+        <TouchableOpacity style={buttonStyles.secondary} onPress={handleAddToCart}>
           <Text style={buttonStyles.secondaryText}>
             {isInCart ? 'Go to cart' : 'Add to Cart'}
           </Text>
@@ -219,6 +225,17 @@ const ProductDetail = () => {
           <Text style={buttonStyles.primaryText}>Buy Now</Text>
         </TouchableOpacity>
       </View>
+
+      <SuccessModal
+        visible={successModalVisible}
+        onClose={() => setSuccessModalVisible(false)}
+        message="Item added to cart successfully!"
+      />
+      <ErrorModal
+        visible={errorModalVisible}
+        onClose={() => setErrorModalVisible(false)}
+        message="Failed to add item to cart. Please try again."
+      />
     </ScrollView>
   );
 };
@@ -240,7 +257,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: width,
     position: 'relative',
-    // backgroundColor: colors.muted,
   },
   productImage: {
     width: '100%',

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome, Entypo, AntDesign } from '@expo/vector-icons';
 import { AppContext } from '../../context/AppContext';
 import { getProfileInfo } from '../services/authServices';
-import HeaderComponent from '../components/HeaderComponent'; 
 import { useNavigation, usePathname, useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideOutRight } from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -149,7 +148,7 @@ const ProfileScreen = () => {
     {
       icon: <MaterialIcons name="payment" size={24} color={colors.primary} />,
       title: 'Payment method',
-      onPress: () => console.log("Press Payment button"),
+      onPress: () =>console.log("Press Payment button"),
     },
     {
       icon: <FontAwesome name="ticket" size={24} color={colors.primary} />,
